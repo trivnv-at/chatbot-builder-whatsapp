@@ -758,7 +758,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
             {/* Kolom kiri */}
             <div className="flex flex-col gap-5 lg:col-span-7">
               <div className="rounded-xl bg-white p-5 shadow-sm">
-                <nav className="mb-5 flex items-center gap-1.5 overflow-x-auto rounded-xl border border-[#E2E8F0] bg-[#F2F4F6] p-1.5">
+                <nav className="mb-5 grid grid-cols-3 gap-1.5 rounded-xl border border-[#E2E8F0] bg-[#F2F4F6] p-1.5">
                   {SUB_TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = tab.id === subTab;
@@ -767,17 +767,17 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                         key={tab.id}
                         type="button"
                         onClick={() => setSubTab(tab.id)}
-                        className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-xs font-semibold transition ${
+                        className={`flex w-full min-w-0 items-center justify-center gap-2 rounded-lg px-2 py-2.5 text-center text-xs font-semibold leading-tight transition sm:px-4 ${
                           isActive
                             ? 'bg-[#00695F] text-white shadow-sm'
                             : 'text-[#3E4947] hover:bg-[#E4E9EB]'
                         }`}
                       >
-                        <Icon className={`h-[18px] w-[18px] ${isActive ? '' : 'text-[#8A9492]'}`} />
-                        <span>{tab.label}</span>
+                        <Icon className={`hidden h-[18px] w-[18px] shrink-0 sm:block ${isActive ? '' : 'text-[#8A9492]'}`} />
+                        <span className="min-w-0">{tab.label}</span>
                         {tab.badge && (
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                            className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold md:inline ${
                               isActive
                                 ? 'bg-white/20 text-white'
                                 : 'bg-[#E4E9EB] text-[#3E4947]'
