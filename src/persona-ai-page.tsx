@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   GitBranch,
   Bot,
@@ -29,6 +29,12 @@ import {
   FileText,
   Globe
 } from 'lucide-react';
+import {
+  getOfficeHours,
+  getPersonaConfig,
+  saveOfficeHours,
+  savePersonaConfig
+} from './api';
 
 const MODELS = [
   { id: 'deepseek', label: 'OpenCode Go · deepseek-v4.1-flash' },
@@ -59,6 +65,26 @@ const PIC_OPTIONS = [
   { value: 'cmuk8aubr0000p929mgb6hvnn', label: 'Admin Netramaya CRM' },
   { value: 'cmvcp6r6k0000ph01l518p9q0', label: 'Bagus Drafting' },
   { value: 'cbillingtestacct00001', label: 'Billing Test' }
+];
+
+const DEFAULT_PERSONA = {
+  persona: 'Sales consultant Netramaya CRM yang ramah, sopan, dan membantu.',
+  greeting: 'Halo! Terima kasih sudah menghubungi Netramaya CRM. Ada yang bisa saya bantu?',
+  tone: 'Santai',
+  length: 'Sedang',
+  language: 'Ikuti pelanggan',
+  useEmoji: true,
+  systemPrompt:
+    'Selalu ramah, jangan berjanji di luar kapasitas, dan arahkan pelanggan untuk meninggalkan nama, budget, dan lokasi.',
+  examples: ''
+};
+
+const DEFAULT_KNOWLEDGE = { docs: [], faqs: [] };
+
+const DEFAULT_FIELDS = [
+  { id: 1, name: 'Nama Pelanggan', required: true },
+  { id: 2, name: 'Budget / Anggaran', required: true },
+  { id: 3, name: 'Lokasi Domisili', required: true }
 ];
 
 function Toggle({ checked, onChange, onColor = 'bg-[#00695F]' }) {
@@ -144,21 +170,8 @@ function TabHeader({ icon: Icon, title, description, badge }) {
   );
 }
 
-function PersonaTab() {
-  const [persona, setPersona] = useState(
-    'Sales consultant Netramaya CRM yang ramah, sopan, dan membantu.'
-  );
-  const [greeting, setGreeting] = useState(
-    'Halo! Terima kasih sudah menghubungi Netramaya CRM. Ada yang bisa saya bantu?'
-  );
-  const [tone, setTone] = useState('Santai');
-  const [length, setLength] = useState('Sedang');
-  const [language, setLanguage] = useState('Ikuti pelanggan');
-  const [useEmoji, setUseEmoji] = useState(true);
-  const [systemPrompt, setSystemPrompt] = useState(
-    'Selalu ramah, jangan berjanji di luar kapasitas, dan arahkan pelanggan untuk meninggalkan nama, budget, dan lokasi.'
-  );
-  const [examples, setExamples] = useState('');
+function PersonaTab({ value, onChange }) {
+  const set = (key, next) => onChange({ ...value, [key]: next });
 
   return (
     <div className="flex flex-col gap-5">
@@ -169,28 +182,40 @@ function PersonaTab() {
       />
 
       <FormField label="Peran / Kepribadian Bot">
-        <input value={persona} onChange={(e) => setPersona(e.target.value)} className={inputClass} />
+        <input
+          value={value.persona}
+          onChange={(e) => set('persona', e.target.value)}
+          className={inputClass}
+        />
       </FormField>
 
       <FormField label="Sapaan Pembuka" hint="Pesan pertama yang dikirim bot ke pelanggan baru.">
         <textarea
           rows={2}
-          value={greeting}
-          onChange={(e) => setGreeting(e.target.value)}
+          value={value.greeting}
+          onChange={(e) => set('greeting', e.target.value)}
           className={textareaClass}
         />
       </FormField>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormField label="Gaya Bahasa">
-          <select value={tone} onChange={(e) => setTone(e.target.value)} className={inputClass}>
+          <select
+            value={value.tone}
+            onChange={(e) => set('tone', e.target.value)}
+            className={inputClass}
+          >
             <option>Santai</option>
             <option>Semi-formal</option>
             <option>Formal</option>
           </select>
         </FormField>
         <FormField label="Panjang Balasan">
-          <select value={length} onChange={(e) => setLength(e.target.value)} className={inputClass}>
+          <select
+            value={value.length}
+            onChange={(e) => set('length', e.target.value)}
+            className={inputClass}
+          >
             <option>Singkat</option>
             <option>Sedang</option>
             <option>Detail</option>
@@ -198,8 +223,8 @@ function PersonaTab() {
         </FormField>
         <FormField label="Bahasa">
           <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
+            value={value.language}
+            onChange={(e) => set('language', e.target.value)}
             className={inputClass}
           >
             <option>Ikuti pelanggan</option>
@@ -209,7 +234,7 @@ function PersonaTab() {
         </FormField>
         <div className="flex items-center justify-between gap-2 self-end rounded-lg border border-[#E2E8F0] bg-white px-3 py-2">
           <span className="text-xs font-semibold text-[#3E4947]">Gunakan Emoji</span>
-          <Toggle checked={useEmoji} onChange={setUseEmoji} />
+          <Toggle checked={value.useEmoji} onChange={(v) => set('useEmoji', v)} />
         </div>
       </div>
 
@@ -219,8 +244,8 @@ function PersonaTab() {
       >
         <textarea
           rows={4}
-          value={systemPrompt}
-          onChange={(e) => setSystemPrompt(e.target.value)}
+          value={value.systemPrompt}
+          onChange={(e) => set('systemPrompt', e.target.value)}
           className={textareaClass}
         />
       </FormField>
@@ -228,8 +253,8 @@ function PersonaTab() {
       <FormField label="Contoh Percakapan (opsional)" hint="Contoh tanya-jawab untuk melatih gaya bot.">
         <textarea
           rows={3}
-          value={examples}
-          onChange={(e) => setExamples(e.target.value)}
+          value={value.examples}
+          onChange={(e) => set('examples', e.target.value)}
           placeholder={'Pelanggan: Berapa harganya?\nBot: ...'}
           className={textareaClass}
         />
@@ -238,10 +263,12 @@ function PersonaTab() {
   );
 }
 
-function KnowledgeTab() {
-  const [docs, setDocs] = useState([]);
+function KnowledgeTab({ value, onChange }) {
   const [url, setUrl] = useState('');
-  const [faqs, setFaqs] = useState([]);
+  const docs = value.docs;
+  const faqs = value.faqs;
+  const setDocs = (next) => onChange({ ...value, docs: next });
+  const setFaqs = (next) => onChange({ ...value, faqs: next });
 
   const addDocs = (fileList) => {
     const names = Array.from(fileList || []).map((file) => ({
@@ -249,16 +276,13 @@ function KnowledgeTab() {
       name: file.name,
       source: 'Dokumen'
     }));
-    if (names.length) setDocs((prev) => [...prev, ...names]);
+    if (names.length) setDocs([...docs, ...names]);
   };
 
   const addUrl = () => {
-    const value = url.trim();
-    if (!value) return;
-    setDocs((prev) => [
-      ...prev,
-      { id: `${value}-${Date.now()}`, name: value, source: 'Website' }
-    ]);
+    const link = url.trim();
+    if (!link) return;
+    setDocs([...docs, { id: `${link}-${Date.now()}`, name: link, source: 'Website' }]);
     setUrl('');
   };
 
@@ -332,7 +356,7 @@ function KnowledgeTab() {
               </span>
               <button
                 type="button"
-                onClick={() => setDocs((prev) => prev.filter((d) => d.id !== doc.id))}
+                onClick={() => setDocs(docs.filter((d) => d.id !== doc.id))}
                 className="rounded p-1 text-[#6F7977] transition hover:bg-[#E4E9EB] hover:text-[#B3261E]"
               >
                 <Trash2 className="h-4 w-4" />
@@ -348,7 +372,7 @@ function KnowledgeTab() {
           <button
             type="button"
             onClick={() =>
-              setFaqs((prev) => [...prev, { id: Date.now(), q: '', a: '' }])
+              setFaqs([...faqs, { id: Date.now(), q: '', a: '' }])
             }
             className="inline-flex items-center gap-1 rounded-lg bg-[#E4E9EB] px-2.5 py-1 text-[10px] font-semibold text-[#3E4947] transition hover:brightness-105"
           >
@@ -364,9 +388,7 @@ function KnowledgeTab() {
               <input
                 value={faq.q}
                 onChange={(e) =>
-                  setFaqs((prev) =>
-                    prev.map((f) => (f.id === faq.id ? { ...f, q: e.target.value } : f))
-                  )
+                  setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, q: e.target.value } : f)))
                 }
                 placeholder="Pertanyaan"
                 className={inputClass}
@@ -375,16 +397,14 @@ function KnowledgeTab() {
                 <input
                   value={faq.a}
                   onChange={(e) =>
-                    setFaqs((prev) =>
-                      prev.map((f) => (f.id === faq.id ? { ...f, a: e.target.value } : f))
-                    )
+                    setFaqs(faqs.map((f) => (f.id === faq.id ? { ...f, a: e.target.value } : f)))
                   }
                   placeholder="Jawaban"
                   className={inputClass}
                 />
                 <button
                   type="button"
-                  onClick={() => setFaqs((prev) => prev.filter((f) => f.id !== faq.id))}
+                  onClick={() => setFaqs(faqs.filter((f) => f.id !== faq.id))}
                   className="rounded p-1 text-[#6F7977] transition hover:bg-[#E4E9EB] hover:text-[#B3261E]"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -398,18 +418,14 @@ function KnowledgeTab() {
   );
 }
 
-function RequiredFieldsTab() {
-  const [fields, setFields] = useState([
-    { id: 1, name: 'Nama Pelanggan', required: true },
-    { id: 2, name: 'Budget / Anggaran', required: true },
-    { id: 3, name: 'Lokasi Domisili', required: true }
-  ]);
+function RequiredFieldsTab({ value, onChange }) {
+  const fields = value;
+  const setFields = (next) => onChange(next);
 
   const updateField = (id, patch) =>
-    setFields((prev) => prev.map((f) => (f.id === id ? { ...f, ...patch } : f)));
-  const removeField = (id) => setFields((prev) => prev.filter((f) => f.id !== id));
-  const addField = () =>
-    setFields((prev) => [...prev, { id: Date.now(), name: '', required: true }]);
+    setFields(fields.map((f) => (f.id === id ? { ...f, ...patch } : f)));
+  const removeField = (id) => setFields(fields.filter((f) => f.id !== id));
+  const addField = () => setFields([...fields, { id: Date.now(), name: '', required: true }]);
 
   const requiredCount = fields.filter((f) => f.required).length;
 
@@ -499,6 +515,67 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
     score: true
   });
   const setRule = (key, value) => setRules((prev) => ({ ...prev, [key]: value }));
+
+  const [persona, setPersona] = useState(DEFAULT_PERSONA);
+  const [knowledge, setKnowledge] = useState(DEFAULT_KNOWLEDGE);
+  const [fields, setFields] = useState(DEFAULT_FIELDS);
+  const [saving, setSaving] = useState(false);
+  const [saveNotice, setSaveNotice] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getPersonaConfig(), getOfficeHours()])
+      .then(([personaRes, hoursRes]) => {
+        if (cancelled) return;
+        const cfg = (personaRes && personaRes.config) || null;
+        if (cfg) {
+          if (cfg.persona) setPersona({ ...DEFAULT_PERSONA, ...cfg.persona });
+          if (cfg.knowledge) setKnowledge({ ...DEFAULT_KNOWLEDGE, ...cfg.knowledge });
+          if (Array.isArray(cfg.fields)) setFields(cfg.fields);
+          if (typeof cfg.activeStage === 'string') setActiveStage(cfg.activeStage);
+          if (typeof cfg.modelId === 'string') setModelId(cfg.modelId);
+          if (typeof cfg.botSystemOn === 'boolean') setBotSystemOn(cfg.botSystemOn);
+          if (cfg.handover) {
+            if (typeof cfg.handover.keywords === 'string')
+              setHandoverKeywords(cfg.handover.keywords);
+            if (typeof cfg.handover.pic === 'string') setHandoverPic(cfg.handover.pic);
+            if (typeof cfg.handover.reply === 'string') setHandoverReply(cfg.handover.reply);
+          }
+          if (cfg.rules) setRules((prev) => ({ ...prev, ...cfg.rules }));
+        }
+        const hours = hoursRes && hoursRes.officeHours;
+        if (hours && typeof hours.enabled === 'boolean') setOfficeHoursOn(hours.enabled);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const saveAll = async () => {
+    setSaving(true);
+    setSaveNotice('');
+    try {
+      await Promise.all([
+        savePersonaConfig({
+          activeStage,
+          modelId,
+          botSystemOn,
+          persona,
+          knowledge,
+          fields,
+          handover: { keywords: handoverKeywords, pic: handoverPic, reply: handoverReply },
+          rules
+        }),
+        saveOfficeHours({ enabled: officeHoursOn, startHour: 9, endHour: 18 })
+      ]);
+      setSaveNotice('Tersimpan ke server.');
+    } catch (error) {
+      setSaveNotice(`Gagal simpan: ${error.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const [testInput, setTestInput] = useState('');
   const [testMessages, setTestMessages] = useState([
@@ -603,14 +680,18 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                 </div>
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105"
+                  onClick={saveAll}
+                  disabled={saving}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105 disabled:opacity-60"
                 >
                   <Bookmark className="h-[18px] w-[18px]" />
                   Simpan Sementara
                 </button>
                 <button
                   type="button"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98]"
+                  onClick={saveAll}
+                  disabled={saving}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98] disabled:opacity-60"
                 >
                   <Rocket className="h-[18px] w-[18px]" />
                   Simpan &amp; Aktifkan
@@ -692,6 +773,9 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                 <Toggle checked={officeHoursOn} onChange={setOfficeHoursOn} />
               </div>
             </div>
+            {saveNotice && (
+              <p className="text-[11px] font-medium text-[#00695F]">{saveNotice}</p>
+            )}
           </header>
 
           {/* Pilih stage CRM */}
@@ -857,7 +941,9 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                       <div className="flex justify-end">
                         <button
                           type="button"
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105"
+                          onClick={saveAll}
+                          disabled={saving}
+                          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105 disabled:opacity-60"
                         >
                           <Save className="h-[18px] w-[18px]" />
                           Simpan Handover
@@ -902,11 +988,11 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                     </div>
                   </div>
                 ) : subTab === 'peran' ? (
-                  <PersonaTab />
+                  <PersonaTab value={persona} onChange={setPersona} />
                 ) : subTab === 'pengetahuan' ? (
-                  <KnowledgeTab />
+                  <KnowledgeTab value={knowledge} onChange={setKnowledge} />
                 ) : (
-                  <RequiredFieldsTab />
+                  <RequiredFieldsTab value={fields} onChange={setFields} />
                 )}
 
                 <div className="mt-6 flex items-center justify-end gap-2 border-t border-[#E2E8F0] pt-4">
@@ -919,7 +1005,9 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                   </button>
                   <button
                     type="button"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98]"
+                    onClick={saveAll}
+                    disabled={saving}
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98] disabled:opacity-60"
                   >
                     <Check className="h-[18px] w-[18px]" />
                     Simpan Aturan Otomatisasi

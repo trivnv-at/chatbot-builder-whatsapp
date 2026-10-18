@@ -15,6 +15,7 @@ export const FLOW_OUTPUTS: Record<string, string[]> = {
   assignAgentNode: ['assigned', 'noAgent'],
   customFieldNode: ['out'],
   leadScoreNode: ['out'],
+  appointmentNode: ['created', 'unavailable'],
   aiAgentNode: ['out'],
   sentimentNode: ['positive', 'neutral', 'negative'],
   httpRequestNode: ['success', 'error'],

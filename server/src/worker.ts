@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { redis } from './redis.js';
-import { askGemini } from './ai.js';
+import { askAi } from './ai.js';
 import { sendCapiEvent } from './capi.js';
 import { config } from './config.js';
 import { executeFlow } from './engine/executor.js';
@@ -15,6 +15,7 @@ import {
   type InboundJob,
   type ResumeJob
 } from './queue.js';
+import { loadOfficeHours } from './settings.js';
 import { sendWhatsApp } from './whatsapp.js';
 import type { ConversationState, Flow } from './types.js';
 
@@ -33,8 +34,9 @@ const deps = {
     );
   },
   http: safeHttpRequest,
-  ai: askGemini,
-  capi: sendCapiEvent
+  ai: askAi,
+  capi: sendCapiEvent,
+  officeHours: loadOfficeHours
 };
 
 function resumeSocketFor(flow: Flow, nodeId: string): string {

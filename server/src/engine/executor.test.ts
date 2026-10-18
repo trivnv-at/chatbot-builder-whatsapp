@@ -221,6 +221,90 @@ test('assign agent menghentikan alur sebagai handoff', async () => {
   assert.equal(result.reason, 'agent_handoff');
 });
 
+test('appointment node membuat janji saat slot tersedia', async () => {
+  const sent: OutboundMessage[] = [];
+  const events: string[] = [];
+  const deps: ExecutorDeps = {
+    ...makeDeps(sent, []),
+    capi: async ({ event }) => {
+      events.push(event);
+    }
+  };
+
+  const flow = makeFlow(
+    [
+      node('n1', 'onMessageNode'),
+      node('n2', 'appointmentNode', { requestedAt: new Date(2026, 0, 1, 10, 0, 0).toISOString() }),
+      node('n3', 'sendTextNode', { body: 'janji dibuat' })
+    ],
+    [edge('e1', 'n1', 'out', 'n2'), edge('e2', 'n2', 'created', 'n3')]
+  );
+
+  const result = await executeFlow({
+    state: makeState(),
+    flow,
+    inbound: { text: 'saya mau janji jam 10' },
+    deps
+  });
+
+  assert.equal(result.outcome, 'done');
+  assert.equal(result.state.vars.appointmentStatus, 'created');
+  assert.deepEqual(events, ['Schedule']);
+  assert.equal(sent[0]?.body, 'janji dibuat');
+});
+
+test('appointment node menolak slot di luar jam operasional', async () => {
+  const sent: OutboundMessage[] = [];
+  const deps: ExecutorDeps = {
+    ...makeDeps(sent, []),
+    officeHours: async () => ({ enabled: true, startHour: 9, endHour: 18 })
+  };
+
+  const flow = makeFlow(
+    [
+      node('n1', 'onMessageNode'),
+      node('n2', 'appointmentNode', { requestedAt: new Date(2026, 0, 1, 20, 0, 0).toISOString() }),
+      node('n3', 'sendTextNode', { body: 'diluar jam' })
+    ],
+    [edge('e1', 'n1', 'out', 'n2'), edge('e2', 'n2', 'unavailable', 'n3')]
+  );
+
+  const result = await executeFlow({
+    state: makeState(),
+    flow,
+    inbound: { text: 'janji jam 8 malam' },
+    deps
+  });
+
+  assert.equal(result.state.vars.appointmentStatus, 'unavailable');
+  assert.equal(sent[0]?.body, 'diluar jam');
+});
+
+test('ai agent memakai model override dari node', async () => {
+  const sent: OutboundMessage[] = [];
+  const models: Array<string | undefined> = [];
+  const deps: ExecutorDeps = {
+    ...makeDeps(sent, []),
+    ai: async (input) => {
+      models.push(input.model);
+      return 'balasan';
+    }
+  };
+
+  const flow = makeFlow(
+    [
+      node('n1', 'onMessageNode'),
+      node('n2', 'aiAgentNode', { systemPrompt: 'Jadi sales ramah', model: 'deepseek-v4.1-flash' })
+    ],
+    [edge('e1', 'n1', 'out', 'n2')]
+  );
+
+  await executeFlow({ state: makeState(), flow, inbound: { text: 'halo' }, deps });
+
+  assert.deepEqual(models, ['deepseek-v4.1-flash']);
+  assert.equal(sent[0]?.body, 'balasan');
+});
+
 test('helper ekspresi dan template aman', async () => {
   assert.equal(await evaluateComparison('10', '>=', '5'), true);
   assert.equal(await evaluateComparison('2', '>', '5'), false);
@@ -229,7 +313,9 @@ test('helper ekspresi dan template aman', async () => {
   assert.equal(evaluateEmpty('  '), true);
   assert.equal(evaluateEmpty('ada'), false);
   assert.equal(safeRegex('^(a+)+$'), null);
-  assert.equal(safeRegex('promo').test('PROMO 2026'), true);
+  const promo = safeRegex('promo');
+  assert.ok(promo);
+  assert.equal(promo.test('PROMO 2026'), true);
   assert.equal(resolveTemplate('{{user.name}}', { user: { name: 'Rani' } }), 'Rani');
   assert.equal(resolveText('Hai {{user.name}}!', { user: { name: 'Rani' } }), 'Hai Rani!');
 });

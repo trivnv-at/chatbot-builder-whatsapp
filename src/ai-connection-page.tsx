@@ -14,34 +14,51 @@ import {
   ArrowLeft,
   Server
 } from 'lucide-react';
+import { getAiConfig, saveAiConfig, testAiConfig } from './api';
 
 const PROVIDERS = [
   {
     id: 'opencode',
     label: 'OpenCode Go',
+    protocol: 'openai',
     baseUrl: 'https://api.opencode.go/v1',
     models: ['deepseek-v4.1-flash', 'deepseek-v4.1', 'gpt-5-mini']
   },
   {
     id: 'openai',
     label: 'OpenAI',
+    protocol: 'openai',
     baseUrl: 'https://api.openai.com/v1',
     models: ['gpt-4o-mini', 'gpt-4o']
   },
   {
     id: 'anthropic',
     label: 'Anthropic',
+    protocol: 'anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
     models: ['claude-3.5-sonnet', 'claude-3.5-haiku']
   },
   {
     id: 'google',
     label: 'Google Gemini',
+    protocol: 'gemini',
     baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
     models: ['gemini-1.5-flash', 'gemini-1.5-pro']
   },
-  { id: 'custom', label: 'Kustom', baseUrl: '', models: [] }
+  { id: 'custom', label: 'Kustom', protocol: 'openai', baseUrl: '', models: [] }
 ];
+
+function findProvider(id) {
+  return PROVIDERS.find((p) => p.id === id) || PROVIDERS[0];
+}
+
+interface Connection {
+  id: number;
+  provider: string;
+  model: string;
+  keyHash: string;
+  active: boolean;
+}
 
 const inputClass =
   'h-10 w-full rounded-lg border border-[#D5DDDC] bg-[#F2F4F6] px-3 text-xs text-[#191C1E] outline-none focus:border-[#00695F]';
@@ -78,22 +95,16 @@ function StatusBadge({ status }) {
 
 export default function AiConnectionPage({ onBack }) {
   const [providerId, setProviderId] = useState('opencode');
+  const [protocol, setProtocol] = useState('openai');
   const [baseUrl, setBaseUrl] = useState(PROVIDERS[0].baseUrl);
   const [model, setModel] = useState(PROVIDERS[0].models[0]);
   const [apiKey, setApiKey] = useState('');
   const [keyHash, setKeyHash] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [testStatus, setTestStatus] = useState('idle');
+  const [notice, setNotice] = useState('');
 
-  const [connections, setConnections] = useState([
-    {
-      id: 1,
-      provider: 'OpenCode Go',
-      model: 'deepseek-v4.1-flash',
-      keyHash: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6',
-      active: true
-    }
-  ]);
+  const [connections, setConnections] = useState<Connection[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,35 +120,92 @@ export default function AiConnectionPage({ onBack }) {
     };
   }, [apiKey]);
 
-  const provider = PROVIDERS.find((p) => p.id === providerId) || PROVIDERS[0];
+  useEffect(() => {
+    let cancelled = false;
+    getAiConfig()
+      .then((res) => {
+        const cfg = res && res.config;
+        if (cancelled || !cfg) return;
+        const preset = findProvider(cfg.provider);
+        setProviderId(preset.id);
+        setProtocol(cfg.protocol || preset.protocol);
+        setBaseUrl(cfg.baseUrl || preset.baseUrl);
+        setModel(cfg.model || preset.models[0] || '');
+        setConnections([
+          {
+            id: 1,
+            provider: preset.label,
+            model: cfg.model,
+            keyHash: cfg.keyHash,
+            active: true
+          }
+        ]);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const provider = findProvider(providerId);
 
   const changeProvider = (id) => {
-    setProviderId(id);
-    const next = PROVIDERS.find((p) => p.id === id) || PROVIDERS[0];
+    const next = findProvider(id);
+    setProviderId(next.id);
+    setProtocol(next.protocol);
     setBaseUrl(next.baseUrl);
     setModel(next.models[0] || '');
     setTestStatus('idle');
   };
 
-  const testConnection = () => {
+  const testConnection = async () => {
     setTestStatus('testing');
-    setTestStatus(apiKey.trim() ? 'ok' : 'fail');
+    setNotice('');
+    try {
+      const res = await testAiConfig({
+        provider: providerId,
+        protocol,
+        baseUrl,
+        model,
+        apiKey: apiKey.trim() || undefined
+      });
+      setTestStatus(res.ok ? 'ok' : 'fail');
+      setNotice(res.ok ? '' : String(res.message || 'gagal terhubung'));
+    } catch (error) {
+      setTestStatus('fail');
+      setNotice(`Backend tidak terjangkau: ${(error as Error).message}`);
+    }
   };
 
   const saveConnection = async () => {
-    if (!model.trim() || !apiKey.trim()) return;
-    const hash = await hashKey(apiKey);
-    setConnections((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        provider: provider.label,
+    if (!model.trim() || !apiKey.trim()) {
+      setNotice('Model dan kunci API wajib diisi.');
+      return;
+    }
+    try {
+      const res = await saveAiConfig({
+        provider: providerId,
+        protocol,
+        baseUrl,
         model,
-        keyHash: hash,
-        active: false
-      }
-    ]);
-    setApiKey('');
+        apiKey
+      });
+      const cfg = (res && res.config) || {};
+      setConnections((prev) => [
+        ...prev.map((c) => ({ ...c, active: false })),
+        {
+          id: Date.now(),
+          provider: provider.label,
+          model,
+          keyHash: cfg.keyHash || keyHash,
+          active: true
+        }
+      ]);
+      setApiKey('');
+      setNotice('Koneksi tersimpan di server (kunci dienkripsi).');
+    } catch (error) {
+      setNotice(`Gagal simpan ke server: ${error.message}`);
+    }
   };
 
   const setActive = (id) =>
@@ -276,6 +344,10 @@ export default function AiConnectionPage({ onBack }) {
                 <StatusBadge status={testStatus} />
               </div>
             </div>
+
+            {notice && (
+              <p className="mt-4 text-[11px] font-medium text-[#B3261E]">{notice}</p>
+            )}
 
             <div className="mt-6 flex items-center justify-end gap-2 border-t border-[#E2E8F0] pt-4">
               <button

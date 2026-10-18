@@ -4,7 +4,11 @@ import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import { z } from 'zod';
 import { config } from './config.js';
+import { getPublicAiConfig, saveAiConfig } from './ai-config.js';
+import { probeAi } from './ai.js';
 import { loadFlow, saveFlow } from './flow/store.js';
+import { getPersonaConfig, savePersonaConfig } from './persona.js';
+import { loadOfficeHours, saveOfficeHours } from './settings.js';
 import { claimMessage, verifyApiKey, verifyWebhookSignature } from './security.js';
 import { enqueueInbound, startWorkers } from './worker.js';
 import { inboxQueue, resumeQueue } from './queue.js';
@@ -151,6 +155,79 @@ app.get('/flows/:id', async (request, reply) => {
   if (!flow) return reply.code(404).send({ error: 'not_found' });
 
   return { flow };
+});
+
+app.get('/ai/config', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+  return { config: await getPublicAiConfig() };
+});
+
+app.put('/ai/config', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+
+  const result = await saveAiConfig(request.body).catch((error: z.ZodError | Error) => error);
+  if (result instanceof z.ZodError) {
+    return reply.code(422).send({ error: 'invalid_config', issues: result.issues });
+  }
+  if (result instanceof Error) {
+    return reply.code(400).send({ error: result.message });
+  }
+  return { ok: true, config: result };
+});
+
+app.post('/ai/test', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+
+  const body = (request.body ?? {}) as Record<string, unknown>;
+  const result = await probeAi(body);
+  return reply.code(result.ok ? 200 : 200).send(result);
+});
+
+app.get('/settings/office-hours', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+  return { officeHours: await loadOfficeHours() };
+});
+
+app.put('/settings/office-hours', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+
+  const result = await saveOfficeHours(request.body).catch((error: z.ZodError | Error) => error);
+  if (result instanceof z.ZodError) {
+    return reply.code(422).send({ error: 'invalid_office_hours', issues: result.issues });
+  }
+  if (result instanceof Error) {
+    return reply.code(400).send({ error: result.message });
+  }
+  return { ok: true, officeHours: result };
+});
+
+app.get('/persona/config', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+  return { config: await getPersonaConfig() };
+});
+
+app.put('/persona/config', async (request, reply) => {
+  if (!verifyApiKey(request.headers['x-api-key'])) {
+    return reply.code(401).send({ error: 'unauthorized' });
+  }
+
+  const result = await savePersonaConfig(request.body).catch((error: Error) => error);
+  if (result instanceof Error) {
+    return reply.code(400).send({ error: result.message });
+  }
+  return { ok: true, config: result };
 });
 
 app.post('/webhook/whatsapp', async (request, reply) => {

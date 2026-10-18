@@ -10,6 +10,7 @@ const envSchema = z.object({
   WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+  AI_CONFIG_SECRET: z.string().min(16).default('dev-ai-config-secret-key-32bytes'),
   DEFAULT_FLOW_ID: z.string().optional(),
   CONVERSATION_TTL_SECONDS: z.coerce.number().int().positive().default(86_400),
   MAX_STEPS: z.coerce.number().int().positive().default(40),

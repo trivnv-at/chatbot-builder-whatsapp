@@ -55,12 +55,19 @@ export interface HttpResult {
   data: unknown;
 }
 
+export interface OfficeHours {
+  enabled: boolean;
+  startHour: number;
+  endHour: number;
+}
+
 export interface ExecutorDeps {
   send: (message: OutboundMessage) => Promise<void>;
   schedule: (state: ConversationState, delayMs: number, socket: string | null) => Promise<void>;
   http: (input: { method: string; url: string; body?: string }) => Promise<HttpResult>;
-  ai: (input: { prompt: string; user: string }) => Promise<string>;
+  ai: (input: { prompt: string; user: string; model?: string }) => Promise<string>;
   capi: (input: { phone: string; event: string; value?: number }) => Promise<void>;
+  officeHours?: () => Promise<OfficeHours>;
 }
 
 export type ExecutionOutcome = 'done' | 'waiting' | 'handoff' | 'stopped';

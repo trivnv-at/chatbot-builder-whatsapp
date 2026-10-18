@@ -27,6 +27,7 @@ import {
   List,
   Image,
   Clock,
+  CalendarClock,
   Timer,
   Split,
   UserPlus,
@@ -468,6 +469,32 @@ const NODE_CATALOG = [
     ],
     fields: [{ key: 'scoreValue', label: 'Perubahan Skor', type: 'number', step: 5, help: 'Boleh negatif, contoh -5.' }],
     defaultData: { scoreValue: 10 }
+  },
+  {
+    type: 'appointmentNode',
+    category: 'crm',
+    label: 'Buat Janji Temu',
+    icon: CalendarClock,
+    description: 'Membuat jadwal janji temu; ditolak bila di luar jam operasional.',
+    summary: (d) => d.requestedAt || 'Waktu janji',
+    inputs: [
+      { id: 'in', name: 'Exec In', type: 'flow' },
+      { id: 'requestedAt', name: 'Requested At', type: 'string' }
+    ],
+    outputs: [
+      { id: 'created', name: 'Janji Dibuat', type: 'flow' },
+      { id: 'unavailable', name: 'Slot Tidak Tersedia', type: 'flow' }
+    ],
+    fields: [
+      {
+        key: 'requestedAt',
+        label: 'Waktu Janji (ISO)',
+        type: 'text',
+        placeholder: '{{appointmentAt}}',
+        help: 'Format tanggal ISO, mis. 2026-01-01T10:00:00Z. Gagal bila di luar jam operasional.'
+      }
+    ],
+    defaultData: { requestedAt: '' }
   },
 
   // ---------- 6. AI ----------

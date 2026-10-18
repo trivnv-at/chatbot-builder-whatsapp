@@ -1,6 +1,7 @@
 import { config } from '../config.js';
 import { resolveTemplate, resolveText } from './context.js';
 import { evaluateContains, evaluateComparison, evaluateEmpty, safeRegex } from './expression.js';
+import { isWithinOfficeHours } from './schedule.js';
 import { TRIGGER_TYPES } from './node-defs.js';
 import type {
   ConversationState,
@@ -174,6 +175,22 @@ async function runNode(
       return { socket: 'out' };
     }
 
+    case 'appointmentNode': {
+      const requestedAt = resolveText(data.requestedAt, vars) || String(vars.appointmentAt ?? '');
+      const hours = deps.officeHours ? await deps.officeHours() : null;
+      const allowed = !hours || isWithinOfficeHours(requestedAt, hours);
+
+      if (!requestedAt || !allowed) {
+        vars.appointmentStatus = 'unavailable';
+        return { socket: 'unavailable' };
+      }
+
+      vars.appointmentAt = requestedAt;
+      vars.appointmentStatus = 'created';
+      await deps.capi({ phone: state.phone, event: 'Schedule' });
+      return { socket: 'created' };
+    }
+
     case 'assignAgentNode': {
       state.handoff = true;
       return { stop: true, outcome: 'handoff', reason: 'agent_handoff' };
@@ -194,7 +211,8 @@ async function runNode(
     case 'aiAgentNode': {
       const reply = await deps.ai({
         prompt: resolveText(data.systemPrompt, vars),
-        user: text
+        user: text,
+        model: resolveText(data.model, vars) || undefined
       });
       vars.aiResponse = reply;
       await deps.send({ to: state.phone, kind: 'text', body: reply });
