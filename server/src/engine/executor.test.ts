@@ -305,6 +305,27 @@ test('ai agent memakai model override dari node', async () => {
   assert.equal(sent[0]?.body, 'balasan');
 });
 
+test('assign agent mengirim balasan node sebelum handoff', async () => {
+  const sent: OutboundMessage[] = [];
+  const flow = makeFlow(
+    [
+      node('n1', 'onMessageNode'),
+      node('n2', 'assignAgentNode', { department: 'CS', reply: 'Menyambungkan ke tim CS.' })
+    ],
+    [edge('e1', 'n1', 'out', 'n2')]
+  );
+
+  const result = await executeFlow({
+    state: makeState(),
+    flow,
+    inbound: { text: 'saya mau bicara admin' },
+    deps: makeDeps(sent, [])
+  });
+
+  assert.equal(result.outcome, 'handoff');
+  assert.equal(sent[0]?.body, 'Menyambungkan ke tim CS.');
+});
+
 test('helper ekspresi dan template aman', async () => {
   assert.equal(await evaluateComparison('10', '>=', '5'), true);
   assert.equal(await evaluateComparison('2', '>', '5'), false);

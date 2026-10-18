@@ -13,10 +13,7 @@ import {
   Brain,
   BookOpen,
   ListChecks,
-  Handshake,
-  Headset,
   RefreshCw,
-  Save,
   MoreVertical,
   Send,
   BrainCircuit,
@@ -37,10 +34,10 @@ import {
 } from './api';
 
 const MODELS = [
-  { id: 'deepseek', label: 'OpenCode Go · deepseek-v4.1-flash' },
-  { id: 'gpt4o-mini', label: 'OpenAI · gpt-4o-mini' },
-  { id: 'claude', label: 'Anthropic · claude-3.5-sonnet' },
-  { id: 'gemini', label: 'Google · gemini-1.5-flash' }
+  { id: 'deepseek', model: 'deepseek-v4.1-flash', label: 'OpenCode Go · deepseek-v4.1-flash' },
+  { id: 'gpt4o-mini', model: 'gpt-4o-mini', label: 'OpenAI · gpt-4o-mini' },
+  { id: 'claude', model: 'claude-3.5-sonnet', label: 'Anthropic · claude-3.5-sonnet' },
+  { id: 'gemini', model: 'gemini-1.5-flash', label: 'Google · gemini-1.5-flash' }
 ];
 
 const STAGES = [
@@ -56,15 +53,7 @@ const STAGES = [
 const SUB_TABS = [
   { id: 'peran', label: 'Peran & Gaya Bahasa', icon: Brain },
   { id: 'pengetahuan', label: 'Pengetahuan Bot', icon: BookOpen, badge: '0 Dok' },
-  { id: 'datawajib', label: 'Data Wajib', icon: ListChecks, badge: '3 Field' },
-  { id: 'otomatisasi', label: 'Otomatisasi & Handover', icon: Handshake }
-];
-
-const PIC_OPTIONS = [
-  { value: '', label: 'Fallback ke agen kontak' },
-  { value: 'cmuk8aubr0000p929mgb6hvnn', label: 'Admin Netramaya CRM' },
-  { value: 'cmvcp6r6k0000ph01l518p9q0', label: 'Bagus Drafting' },
-  { value: 'cbillingtestacct00001', label: 'Billing Test' }
+  { id: 'datawajib', label: 'Data Wajib', icon: ListChecks, badge: '3 Field' }
 ];
 
 const DEFAULT_PERSONA = {
@@ -104,39 +93,6 @@ function Toggle({ checked, onChange, onColor = 'bg-[#00695F]' }) {
         }`}
       />
     </button>
-  );
-}
-
-function RuleCard({ icon: Icon, title, badges, description, checked, onToggle, tone = 'secondary' }) {
-  const iconTone =
-    tone === 'warning'
-      ? 'bg-[#FFF4E5] text-[#B26A00]'
-      : 'bg-[#CCE8E2] text-[#004F47]';
-  return (
-    <div className="flex flex-col gap-2 rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-2.5">
-          <span className={`mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}>
-            <Icon className="h-5 w-5" />
-          </span>
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-[#191C1E]">{title}</h3>
-              {badges.map((badge) => (
-                <span
-                  key={badge}
-                  className="rounded-full bg-[#E8F8EE] px-2 py-0.5 text-[10px] font-bold text-[#16A34A]"
-                >
-                  {badge}
-                </span>
-              ))}
-            </div>
-            <p className="text-[11px] leading-relaxed text-[#6F7977]">{description}</p>
-          </div>
-        </div>
-        <Toggle checked={checked} onChange={onToggle} />
-      </div>
-    </div>
   );
 }
 
@@ -492,29 +448,13 @@ function RequiredFieldsTab({ value, onChange }) {
 }
 
 export default function PersonaAiPage({ onBack, onManageAi }) {
-  const [subTab, setSubTab] = useState('otomatisasi');
+  const [subTab, setSubTab] = useState('peran');
   const [activeStage, setActiveStage] = useState('New');
   const [modelOpen, setModelOpen] = useState(false);
   const [modelId, setModelId] = useState('deepseek');
 
   const [botSystemOn, setBotSystemOn] = useState(false);
   const [officeHoursOn, setOfficeHoursOn] = useState(false);
-
-  const [handoverKeywords, setHandoverKeywords] = useState(
-    'admin, cs, komplain, customer service, human'
-  );
-  const [handoverPic, setHandoverPic] = useState('');
-  const [handoverReply, setHandoverReply] = useState(
-    'Baik Kak, saya sambungkan ke tim CS/Admin ya. Mohon tunggu sebentar, tim kami akan segera membantu. 🙏'
-  );
-
-  const [rules, setRules] = useState({
-    extract: true,
-    advance: true,
-    human: true,
-    score: true
-  });
-  const setRule = (key, value) => setRules((prev) => ({ ...prev, [key]: value }));
 
   const [persona, setPersona] = useState(DEFAULT_PERSONA);
   const [knowledge, setKnowledge] = useState(DEFAULT_KNOWLEDGE);
@@ -535,13 +475,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
           if (typeof cfg.activeStage === 'string') setActiveStage(cfg.activeStage);
           if (typeof cfg.modelId === 'string') setModelId(cfg.modelId);
           if (typeof cfg.botSystemOn === 'boolean') setBotSystemOn(cfg.botSystemOn);
-          if (cfg.handover) {
-            if (typeof cfg.handover.keywords === 'string')
-              setHandoverKeywords(cfg.handover.keywords);
-            if (typeof cfg.handover.pic === 'string') setHandoverPic(cfg.handover.pic);
-            if (typeof cfg.handover.reply === 'string') setHandoverReply(cfg.handover.reply);
-          }
-          if (cfg.rules) setRules((prev) => ({ ...prev, ...cfg.rules }));
         }
         const hours = hoursRes && hoursRes.officeHours;
         if (hours && typeof hours.enabled === 'boolean') setOfficeHoursOn(hours.enabled);
@@ -560,12 +493,11 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
         savePersonaConfig({
           activeStage,
           modelId,
+          model: activeModel.model,
           botSystemOn,
           persona,
           knowledge,
-          fields,
-          handover: { keywords: handoverKeywords, pic: handoverPic, reply: handoverReply },
-          rules
+          fields
         }),
         saveOfficeHours({ enabled: officeHoursOn, startHour: 9, endHour: 18 })
       ]);
@@ -600,7 +532,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
   ]);
 
   const activeModel = MODELS.find((m) => m.id === modelId) || MODELS[0];
-  const activeRuleCount = Object.values(rules).filter(Boolean).length;
 
   const sendTest = () => {
     const text = testInput.trim();
@@ -860,134 +791,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                   })}
                 </nav>
 
-                {subTab === 'otomatisasi' ? (
-                  <div className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-1">
-                      <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
-                        <div className="flex items-center gap-1">
-                          <Handshake className="h-[22px] w-[22px] text-[#00695F]" />
-                          <h2 className="text-base font-semibold text-[#191C1E]">
-                            Aturan Otomatisasi &amp; Alur Handover
-                          </h2>
-                        </div>
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F8EE] px-2.5 py-1 text-[10px] font-semibold text-[#16A34A]">
-                          {activeRuleCount} Aturan Aktif
-                        </span>
-                      </div>
-                      <p className="text-xs text-[#6F7977]">
-                        Tindakan deterministik AI, routing agen manusia, integrasi scoring, dan
-                        sinkronisasi event Meta Ads CAPI.
-                      </p>
-                    </div>
-
-                    {/* Eskalasi CS */}
-                    <div className="flex flex-col gap-2 rounded-xl border border-[#E2E8F0] bg-white p-3.5 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FFF4E5] text-[#B26A00]">
-                          <Headset className="h-5 w-5" />
-                        </span>
-                        <div className="flex flex-col">
-                          <h3 className="text-sm font-semibold text-[#191C1E]">
-                            Eskalasi Customer Service
-                          </h3>
-                          <p className="text-[11px] text-[#6F7977]">
-                            Bot berhenti membalas &amp; alihkan ke CS saat pesan memuat keyword ini.
-                          </p>
-                        </div>
-                      </div>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-[10px] font-semibold text-[#3E4947]">
-                          Keyword eskalasi (dipisah koma)
-                        </span>
-                        <input
-                          value={handoverKeywords}
-                          onChange={(e) => setHandoverKeywords(e.target.value)}
-                          placeholder="admin, cs, komplain, customer service, human"
-                          className="h-10 rounded-lg border border-[#D5DDDC] bg-[#F2F4F6] px-3 text-xs text-[#191C1E] outline-none focus:border-[#00695F]"
-                        />
-                        <span className="text-[10px] text-[#8A9492]">
-                          Nada negatif (marah, kecewa, komplain, dll.) juga memicu eskalasi otomatis.
-                        </span>
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-[10px] font-semibold text-[#3E4947]">
-                          PIC default (opsional)
-                        </span>
-                        <select
-                          value={handoverPic}
-                          onChange={(e) => setHandoverPic(e.target.value)}
-                          className="h-10 rounded-lg border border-[#D5DDDC] bg-[#F2F4F6] px-3 text-xs text-[#191C1E] outline-none focus:border-[#00695F]"
-                        >
-                          {PIC_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label className="flex flex-col gap-1">
-                        <span className="text-[10px] font-semibold text-[#3E4947]">
-                          Balasan sebelum dialihkan (kosongkan untuk tanpa balasan)
-                        </span>
-                        <textarea
-                          rows={2}
-                          maxLength={500}
-                          value={handoverReply}
-                          onChange={(e) => setHandoverReply(e.target.value)}
-                          placeholder="Baik Kak, saya sambungkan ke tim CS/Admin ya…"
-                          className="rounded-lg border border-[#D5DDDC] bg-[#F2F4F6] px-3 py-2 text-xs text-[#191C1E] outline-none focus:border-[#00695F]"
-                        />
-                      </label>
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={saveAll}
-                          disabled={saving}
-                          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105 disabled:opacity-60"
-                        >
-                          <Save className="h-[18px] w-[18px]" />
-                          Simpan Handover
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Kartu aturan toggle */}
-                    <div className="flex flex-col gap-3">
-                      <RuleCard
-                        icon={RefreshCw}
-                        title="Ekstraksi data kontak otomatis dari percakapan"
-                        badges={['Data Wajib', 'Isi field kosong']}
-                        description="AI menarik field CRM (nama, budget, perusahaan, dll.) yang disebut prospek lalu mengisi kontak yang masih kosong."
-                        checked={rules.extract}
-                        onToggle={(v) => setRule('extract', v)}
-                      />
-                      <RuleCard
-                        icon={RefreshCw}
-                        title="Pindahkan Lead ke stage berikutnya jika Data Wajib lengkap"
-                        badges={['Meta: Schedule']}
-                        description="Jika field wajib tervalidasi oleh ekstraktor AI, otomatis pindahkan ke stage berikutnya."
-                        checked={rules.advance}
-                        onToggle={(v) => setRule('advance', v)}
-                      />
-                      <RuleCard
-                        icon={RefreshCw}
-                        title="Oper ke Admin Manusia jika pembeli mengetik 'Admin' / 'Human'"
-                        badges={['Escalation', 'senderType: AGENT']}
-                        description="Mendeteksi kata kunci eskalasi dan membunyikan notifikasi instan ke PIC."
-                        checked={rules.human}
-                        onToggle={(v) => setRule('human', v)}
-                      />
-                      <RuleCard
-                        icon={RefreshCw}
-                        title="Tambah skor bila menyebut anggaran / urgensi"
-                        badges={['BUDGET_MENTION +25', 'URGENCY +17']}
-                        description="Memicu modul scoring lead saat prospek menyebut budget tinggi atau tenggat mendesak."
-                        checked={rules.score}
-                        onToggle={(v) => setRule('score', v)}
-                      />
-                    </div>
-                  </div>
-                ) : subTab === 'peran' ? (
+                {subTab === 'peran' ? (
                   <PersonaTab value={persona} onChange={setPersona} />
                 ) : subTab === 'pengetahuan' ? (
                   <KnowledgeTab value={knowledge} onChange={setKnowledge} />
@@ -1010,7 +814,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98] disabled:opacity-60"
                   >
                     <Check className="h-[18px] w-[18px]" />
-                    Simpan Aturan Otomatisasi
+                    Simpan Pengaturan
                   </button>
                 </div>
               </div>

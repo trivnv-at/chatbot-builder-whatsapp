@@ -192,6 +192,10 @@ async function runNode(
     }
 
     case 'assignAgentNode': {
+      const reply = resolveText(data.reply, vars);
+      if (reply.trim()) {
+        await deps.send({ to: state.phone, kind: 'text', body: reply });
+      }
       state.handoff = true;
       return { stop: true, outcome: 'handoff', reason: 'agent_handoff' };
     }

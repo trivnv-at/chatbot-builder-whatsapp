@@ -429,9 +429,20 @@ const NODE_CATALOG = [
     ],
     fields: [
       { key: 'department', label: 'Tim / Agen', type: 'text', placeholder: 'Sales' },
-      { key: 'mode', label: 'Mode Distribusi', type: 'select', options: ['Round-Robin', 'Least-Busy', 'Direct'] }
+      { key: 'mode', label: 'Mode Distribusi', type: 'select', options: ['Round-Robin', 'Least-Busy', 'Direct'] },
+      {
+        key: 'reply',
+        label: 'Balasan Sebelum Dialihkan',
+        type: 'textarea',
+        rows: 2,
+        help: 'Pesan yang dikirim bot sebelum percakapan diserahkan ke agen. Kosongkan untuk tanpa balasan.'
+      }
     ],
-    defaultData: { department: 'Sales', mode: 'Round-Robin' }
+    defaultData: {
+      department: 'Sales',
+      mode: 'Round-Robin',
+      reply: 'Baik Kak, saya sambungkan ke tim CS/Admin ya. Mohon tunggu sebentar.'
+    }
   },
   {
     type: 'customFieldNode',
