@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
-  Cpu,
   KeyRound,
   Eye,
   EyeOff,
-  PlugZap,
   CheckCircle2,
   XCircle,
   Trash2,
@@ -226,9 +224,6 @@ export default function AiConnectionPage({ onBack }) {
           Kembali ke Persona AI
         </button>
         <div className="flex items-center gap-2">
-          <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCE8E2] text-[#004F47]">
-            <PlugZap className="h-[18px] w-[18px]" />
-          </span>
           <h1 className="text-lg font-semibold tracking-tight text-[#191C1E]">Koneksi AI</h1>
         </div>
         <p className="max-w-2xl text-xs text-[#6F7977]">
@@ -242,7 +237,6 @@ export default function AiConnectionPage({ onBack }) {
         <div className="flex flex-col gap-5 lg:col-span-7">
           <div className="rounded-xl bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-1.5">
-              <Cpu className="h-[22px] w-[22px] text-[#00695F]" />
               <h2 className="text-base font-semibold text-[#191C1E]">Pengaturan Koneksi</h2>
             </div>
 
@@ -334,10 +328,8 @@ export default function AiConnectionPage({ onBack }) {
                   disabled={testStatus === 'testing'}
                   className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#E4E9EB] px-4 text-xs font-medium text-[#3E4947] transition hover:brightness-105 disabled:opacity-60"
                 >
-                  {testStatus === 'testing' ? (
+                  {testStatus === 'testing' && (
                     <Loader2 className="h-[18px] w-[18px] animate-spin" />
-                  ) : (
-                    <PlugZap className="h-[18px] w-[18px]" />
                   )}
                   Uji Koneksi
                 </button>

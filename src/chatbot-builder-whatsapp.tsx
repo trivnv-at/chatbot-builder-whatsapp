@@ -2593,7 +2593,6 @@ export default function App() {
                   : 'bg-[#00695F] text-white hover:bg-[#004F47]'
               }`}
             >
-              <Bot className="h-4 w-4" />
               Atur Model AI
             </button>
           </div>

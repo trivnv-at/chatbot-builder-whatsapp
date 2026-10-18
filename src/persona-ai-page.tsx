@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react';
 import {
-  GitBranch,
-  Bot,
   Bookmark,
-  Rocket,
-  Cpu,
   ChevronDown,
   Settings,
   Clock,
   Info,
-  Brain,
-  BookOpen,
   ListChecks,
   RefreshCw,
   MoreVertical,
   Send,
-  BrainCircuit,
   MoreHorizontal,
   Timer,
   Check,
@@ -40,8 +33,8 @@ const MODELS = [
 ];
 
 const SUB_TABS = [
-  { id: 'peran', label: 'Gaya Bicara', icon: Brain },
-  { id: 'pengetahuan', label: 'Sumber Info', icon: BookOpen, badge: '0' },
+  { id: 'peran', label: 'Gaya Bicara' },
+  { id: 'pengetahuan', label: 'Sumber Info', badge: '0' },
   { id: 'datawajib', label: 'Data Pelanggan', icon: ListChecks, badge: '3' }
 ];
 
@@ -105,7 +98,7 @@ function TabHeader({ icon: Icon, title, description, badge }) {
     <div className="flex flex-col gap-1">
       <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
         <div className="flex items-center gap-1">
-          <Icon className="h-[22px] w-[22px] text-[#00695F]" />
+          {Icon && <Icon className="h-[22px] w-[22px] text-[#00695F]" />}
           <h2 className="text-base font-semibold text-[#191C1E]">{title}</h2>
         </div>
         {badge}
@@ -121,7 +114,6 @@ function PersonaTab({ value, onChange }) {
   return (
     <div className="flex flex-col gap-5">
       <TabHeader
-        icon={Brain}
         title="Gaya Bicara Bot"
         description="Tentukan kepribadian dan cara bicara chatbot. Semua balasan bot akan mengikuti gaya ini."
       />
@@ -234,7 +226,6 @@ function KnowledgeTab({ value, onChange }) {
   return (
     <div className="flex flex-col gap-5">
       <TabHeader
-        icon={BookOpen}
         title="Sumber Pengetahuan Bot"
         description="Unggah dokumen atau tempel link website supaya bot bisa menjawab dari informasi milikmu."
         badge={
@@ -555,7 +546,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
             title="Kembali ke chatbot"
             className="-mb-px flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-xs font-semibold text-[#6F7977] transition hover:text-[#191C1E]"
           >
-            <GitBranch className="h-4 w-4" />
             Workflow
           </button>
           <button
@@ -563,7 +553,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
             aria-current="page"
             className="-mb-px flex items-center gap-2 border-b-2 border-[#00695F] px-3 py-2 text-xs font-semibold text-[#00695F]"
           >
-            <Bot className="h-4 w-4" />
             Persona AI
           </button>
         </div>
@@ -575,9 +564,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
               <div>
                 <div className="mb-1 flex items-center gap-2">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[#CCE8E2] text-[#004F47]">
-                    <Bot className="h-[18px] w-[18px]" />
-                  </span>
                   <h1 className="text-lg font-semibold tracking-tight text-[#191C1E]">
                     Atur Gaya Balasan Chatbot
                   </h1>
@@ -610,7 +596,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                   disabled={saving}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#00695F] px-4 text-xs font-medium text-white shadow-sm transition hover:bg-[#004F47] active:scale-[0.98] disabled:opacity-60"
                 >
-                  <Rocket className="h-[18px] w-[18px]" />
                   Simpan &amp; Aktifkan
                 </button>
               </div>
@@ -627,7 +612,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                       onClick={() => setModelOpen((v) => !v)}
                       className="inline-flex items-center gap-2 rounded-lg border border-[#E2E8F0] bg-white px-4 py-2 text-xs font-semibold text-[#191C1E] shadow-sm transition hover:border-[#BEC9C6]"
                     >
-                      <Cpu className="h-[18px] w-[18px] text-[#00695F]" />
                       <span className="tracking-tight">{activeModel.label}</span>
                       <ChevronDown className="h-[18px] w-[18px] text-[#8A9492]" />
                     </button>
@@ -705,7 +689,13 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                             : 'text-[#3E4947] hover:bg-[#E4E9EB]'
                         }`}
                       >
-                        <Icon className={`hidden h-[18px] w-[18px] shrink-0 sm:block ${isActive ? '' : 'text-[#8A9492]'}`} />
+                        {Icon && (
+                          <Icon
+                            className={`hidden h-[18px] w-[18px] shrink-0 sm:block ${
+                              isActive ? '' : 'text-[#8A9492]'
+                            }`}
+                          />
+                        )}
                         <span className="min-w-0">{tab.label}</span>
                         {tab.badge && (
                           <span
@@ -864,7 +854,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                 <div className="mt-4 rounded-xl bg-white p-4 shadow-sm">
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <BrainCircuit className="h-[18px] w-[18px] text-[#00695F]" />
                       <span className="text-sm font-semibold text-[#191C1E]">
                         Data yang Terkumpul
                       </span>
