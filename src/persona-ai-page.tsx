@@ -475,8 +475,7 @@ function RequiredFieldsTab() {
   );
 }
 
-export default function PersonaAiPage({ onBack }) {
-  const [mainTab, setMainTab] = useState('persona');
+export default function PersonaAiPage({ onBack, onManageAi }) {
   const [subTab, setSubTab] = useState('otomatisasi');
   const [activeStage, setActiveStage] = useState('New');
   const [modelOpen, setModelOpen] = useState(false);
@@ -486,7 +485,7 @@ export default function PersonaAiPage({ onBack }) {
   const [officeHoursOn, setOfficeHoursOn] = useState(false);
 
   const [handoverKeywords, setHandoverKeywords] = useState(
-    'admin, cs, komplain, customer service'
+    'admin, cs, komplain, customer service, human'
   );
   const [handoverPic, setHandoverPic] = useState('');
   const [handoverReply, setHandoverReply] = useState(
@@ -496,7 +495,6 @@ export default function PersonaAiPage({ onBack }) {
   const [rules, setRules] = useState({
     extract: true,
     advance: true,
-    appointment: false,
     human: true,
     score: true
   });
@@ -559,24 +557,17 @@ export default function PersonaAiPage({ onBack }) {
         <div className="flex gap-1 border-b border-[#E2E8F0]">
           <button
             type="button"
-            onClick={() => setMainTab('workflow')}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-xs font-semibold transition ${
-              mainTab === 'workflow'
-                ? 'border-[#00695F] text-[#00695F]'
-                : 'border-transparent text-[#6F7977] hover:text-[#191C1E]'
-            }`}
+            onClick={onBack}
+            title="Kembali ke chatbot"
+            className="-mb-px flex items-center gap-2 border-b-2 border-transparent px-3 py-2 text-xs font-semibold text-[#6F7977] transition hover:text-[#191C1E]"
           >
             <GitBranch className="h-4 w-4" />
             Workflow
           </button>
           <button
             type="button"
-            onClick={() => setMainTab('persona')}
-            className={`-mb-px flex items-center gap-2 border-b-2 px-3 py-2 text-xs font-semibold transition ${
-              mainTab === 'persona'
-                ? 'border-[#00695F] text-[#00695F]'
-                : 'border-transparent text-[#6F7977] hover:text-[#191C1E]'
-            }`}
+            aria-current="page"
+            className="-mb-px flex items-center gap-2 border-b-2 border-[#00695F] px-3 py-2 text-xs font-semibold text-[#00695F]"
           >
             <Bot className="h-4 w-4" />
             Persona AI
@@ -584,16 +575,7 @@ export default function PersonaAiPage({ onBack }) {
         </div>
       </div>
 
-      {mainTab === 'workflow' ? (
-        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-[#BEC9C6] bg-white p-8 text-center">
-          <p className="max-w-sm text-sm text-[#6F7977]">
-            Workflow builder ada di halaman utama. Gunakan tab{' '}
-            <strong className="font-semibold text-[#3E4947]">Persona AI</strong> untuk mengatur
-            chatbot per stage CRM.
-          </p>
-        </div>
-      ) : (
-        <div className="flex w-full flex-col gap-5">
+      <div className="flex w-full flex-col gap-5">
           {/* Header konfigurasi bot */}
           <header className="flex flex-col gap-4">
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -679,18 +661,19 @@ export default function PersonaAiPage({ onBack }) {
                     Terhubung
                   </span>
                   <span className="font-mono text-[11px] text-[#6F7977]">
-                    API key:{' '}
-                    <span className="rounded bg-[#E4E9EB] px-1 py-0.5">sk-E…tOle (67)</span> ·
-                    tersimpan (dienkripsi)
+                    API key hash:{' '}
+                    <span className="rounded bg-[#E4E9EB] px-1 py-0.5">sha256:a1b2c3d4…c5d6</span> ·
+                    tersimpan sebagai hash
                   </span>
                 </div>
-                <a
-                  href="/settings/ai"
+                <button
+                  type="button"
+                  onClick={onManageAi}
                   className="inline-flex items-center gap-2 rounded-lg bg-[#F2F4F6] px-4 py-1.5 text-xs font-semibold text-[#00695F] transition hover:bg-[#E4E9EB]"
                 >
                   <Settings className="h-[18px] w-[18px]" />
                   Kelola Koneksi AI
-                </a>
+                </button>
               </div>
             </div>
 
@@ -838,6 +821,9 @@ export default function PersonaAiPage({ onBack }) {
                           placeholder="admin, cs, komplain, customer service, human"
                           className="h-10 rounded-lg border border-[#D5DDDC] bg-[#F2F4F6] px-3 text-xs text-[#191C1E] outline-none focus:border-[#00695F]"
                         />
+                        <span className="text-[10px] text-[#8A9492]">
+                          Nada negatif (marah, kecewa, komplain, dll.) juga memicu eskalasi otomatis.
+                        </span>
                       </label>
                       <label className="flex flex-col gap-1">
                         <span className="text-[10px] font-semibold text-[#3E4947]">
@@ -896,14 +882,6 @@ export default function PersonaAiPage({ onBack }) {
                         description="Jika field wajib tervalidasi oleh ekstraktor AI, otomatis pindahkan ke stage berikutnya."
                         checked={rules.advance}
                         onToggle={(v) => setRule('advance', v)}
-                      />
-                      <RuleCard
-                        icon={RefreshCw}
-                        title="Buat Janji Temu otomatis dari percakapan (#57)"
-                        badges={['source: CHATBOT', 'Slot Jam Operasional']}
-                        description="Bot menawarkan slot dari Jam Operasional (Settings → Kalender), lalu membuat Janji Temu (source: CHATBOT) bila prospek menyebut tanggal & jam."
-                        checked={rules.appointment}
-                        onToggle={(v) => setRule('appointment', v)}
                       />
                       <RuleCard
                         icon={RefreshCw}
@@ -1092,7 +1070,6 @@ export default function PersonaAiPage({ onBack }) {
             </div>
           </div>
         </div>
-      )}
     </div>
   );
 }

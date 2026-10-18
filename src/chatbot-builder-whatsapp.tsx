@@ -42,6 +42,7 @@ import {
   Eye
 } from 'lucide-react';
 import PersonaAiPage from './persona-ai-page';
+import AiConnectionPage from './ai-connection-page';
 
 // ===== Tipe data socket (mengacu Node Editor Blender) =====
 const SOCKET_TYPES = {
@@ -273,7 +274,7 @@ const NODE_CATALOG = [
       }
     ],
     defaultData: {
-      title: 'Daftar Layanan AdCRM',
+      title: 'Daftar Layanan',
       buttonLabel: 'Pilih Layanan',
       rows: ['Katalog Produk', 'Cek Harga', 'Bicara dengan CS']
     }
@@ -473,7 +474,7 @@ const NODE_CATALOG = [
   {
     type: 'aiAgentNode',
     category: 'ai',
-    label: 'AI Stage Agent (Gemini)',
+    label: 'AI Stage Agent',
     icon: Bot,
     description: 'Memproses pesan pelanggan dengan LLM berbasis instruksi dan data CRM.',
     summary: (d) => d.model,
@@ -496,11 +497,11 @@ const NODE_CATALOG = [
         rows: 4,
         help: 'Panduan karakter dan batas pengetahuan AI.'
       },
-      { key: 'model', label: 'Model Gemini', type: 'text' }
+      { key: 'model', label: 'Model AI', type: 'text', help: 'Harus sama dengan model di Koneksi AI.' }
     ],
     defaultData: {
-      systemPrompt: 'Anda adalah Sales Rep ramah AdCRM. Bantu kualifikasi kebutuhan dan budget calon pembeli.',
-      model: 'gemini-3-flash'
+      systemPrompt: 'Anda adalah Sales Rep ramah yang membantu kualifikasi kebutuhan dan budget calon pembeli.',
+      model: 'deepseek-v4.1-flash'
     }
   },
   {
@@ -636,7 +637,7 @@ const BOTS = [
     graph: buildGraph([
       { type: 'ctwaNode', label: 'Iklan CTWA Masuk' },
       { type: 'conditionNode', label: 'Cek Skor Lead', y: 260, data: { operandA: '{{lead.score}}', operator: '>=', operandB: '50' } },
-      { type: 'aiAgentNode', label: 'Kualifikasi Gemini', y: 60 },
+      { type: 'aiAgentNode', label: 'Kualifikasi AI', y: 60 },
       { type: 'sendTextNode', label: 'Kirim Info Katalog', y: 60 }
     ])
   },
@@ -1015,9 +1016,9 @@ function BotListPage({ bots, onOpen, onCreate, onImport, onDelete }) {
         {/* Judul halaman + aksi */}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold tracking-tight text-[#191C1E]">Robot</h2>
+            <h2 className="text-lg font-bold tracking-tight text-[#191C1E]">Chatbot</h2>
             <p className="mt-0.5 text-[11px] text-[#6F7977]">
-              Daftar chatbot WhatsApp untuk pipeline AdCRM kamu
+              Daftar chatbot WhatsApp yang membalas pelanggan dari iklan Meta Ads kamu
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -2157,7 +2158,12 @@ export default function App() {
           onDelete={deleteBots}
         />
       ) : view === 'persona' ? (
-        <PersonaAiPage onBack={() => setView('list')} />
+        <PersonaAiPage
+          onBack={() => setView('list')}
+          onManageAi={() => setView('aiConnection')}
+        />
+      ) : view === 'aiConnection' ? (
+        <AiConnectionPage onBack={() => setView('persona')} />
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
         {/* 2. LEFT DRAWER (NODE CATALOG) */}
