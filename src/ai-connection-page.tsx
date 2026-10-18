@@ -16,11 +16,32 @@ import { getAiConfig, saveAiConfig, testAiConfig } from './api';
 
 const PROVIDERS = [
   {
+    id: 'meta',
+    label: 'Meta Model API',
+    protocol: 'openai',
+    baseUrl: 'https://api.meta.ai/v1',
+    models: [
+      'muse-spark-1.3',
+      'muse-spark-1.3-contributor',
+      'muse-spark-1.2',
+      'muse-spark-1.1',
+      'muse-wonder-1.0'
+    ]
+  },
+  {
     id: 'opencode',
     label: 'OpenCode Go',
     protocol: 'openai',
     baseUrl: 'https://api.opencode.go/v1',
-    models: ['deepseek-v4.1-flash', 'deepseek-v4.1', 'gpt-5-mini']
+    models: [
+      'muse-spark-1.3',
+      'muse-spark-1.3-contributor',
+      'muse-spark-1.2',
+      'muse-wonder-1.0',
+      'deepseek-v4.1-flash',
+      'deepseek-v4.1',
+      'gpt-5-mini'
+    ]
   },
   {
     id: 'openai',
@@ -34,7 +55,15 @@ const PROVIDERS = [
     label: 'Anthropic',
     protocol: 'anthropic',
     baseUrl: 'https://api.anthropic.com/v1',
-    models: ['claude-3.5-sonnet', 'claude-3.5-haiku']
+    models: [
+      'muse-wonder-1.0',
+      'muse-spark-1.3',
+      'muse-spark-1.3-contributor',
+      'muse-spark-1.2',
+      'muse-spark-1.1',
+      'claude-3.5-sonnet',
+      'claude-3.5-haiku'
+    ]
   },
   {
     id: 'google',
@@ -92,7 +121,7 @@ function StatusBadge({ status }) {
 }
 
 export default function AiConnectionPage({ onBack }) {
-  const [providerId, setProviderId] = useState('opencode');
+  const [providerId, setProviderId] = useState('meta');
   const [protocol, setProtocol] = useState('openai');
   const [baseUrl, setBaseUrl] = useState(PROVIDERS[0].baseUrl);
   const [model, setModel] = useState(PROVIDERS[0].models[0]);

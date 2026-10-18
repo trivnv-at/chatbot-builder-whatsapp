@@ -10,6 +10,7 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 ## Daftar Isi
 
 - [Fitur](#fitur)
+- [Preset Koneksi AI](#preset-koneksi-ai)
 - [Arsitektur](#arsitektur)
 - [Tech Stack](#tech-stack)
 - [Prasyarat](#prasyarat)
@@ -30,7 +31,7 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 - **Canvas node bertipe socket** — node disambungkan lewat socket bertipe (`flow`, `string`, `number`, `boolean`, `json`, `array`); koneksi divalidasi agar tipe cocok.
 - **Galeri template** — 12 template siap pakai (sambut pelanggan, janji temu, kualifikasi lead, dsb.) dengan filter kategori & saluran, judul ramah pengguna.
 - **Persona AI** — peran bot, gaya bicara, sumber pengetahuan, data wajib, dan jam kerja bot. Config disimpan ke backend.
-- **Koneksi AI** — pilih penyedia (OpenAI-compatible / Gemini / Anthropic), base URL, model, dan API key. Kunci disimpan **terenkripsi** (AES-256-GCM); UI hanya menampilkan hash.
+- **Koneksi AI** — preset **Meta Model API** (default), OpenCode Go, OpenAI, Anthropic, Google Gemini, dan Kustom. Atur base URL, model, dan API key. Kunci disimpan **terenkripsi** (AES-256-GCM); UI hanya menampilkan hash.
 - **Pratinjau & uji** — panel simulasi percakapan dan tombol Uji Koneksi.
 
 ### Engine (backend)
@@ -38,9 +39,30 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 - **Antrian & resume** — BullMQ (`inbound`, `resume`) untuk pesan dan jeda/waktu-tunggu.
 - **Pengiriman WhatsApp Cloud API** — teks, tombol (≤3), list (≤10), media. Otomatis **mock** bila token kosong.
 - **Meta Conversions API (CAPI)** — lapor event konversi server-to-server (nomor di-hash SHA-256).
-- **AI provider-agnostic** — `aiAgentNode` memakai kredensial dari halaman Koneksi AI (fallback ke env Gemini).
+- **AI provider-agnostic** — `aiAgentNode` memakai kredensial dari halaman Koneksi AI (default Meta Model API / Muse; fallback ke env Gemini).
 - **HTTP Request node aman** — hanya HTTPS publik, blokir IP privat/localhost (anti-SSRF), redirect manual.
 - **Guard alur** — `MAX_STEPS`, `MAX_NODE_VISITS` (anti-loop), deduplikasi pesan, verifikasi signature webhook.
+
+---
+
+## Preset Koneksi AI
+
+Halaman **Koneksi AI** menyediakan preset berikut (base URL dan model tetap bisa diubah manual):
+
+| Preset | Protocol | Base URL | Model |
+|---|---|---|---|
+| **Meta Model API** (default) | `openai` | `https://api.meta.ai/v1` | `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`, `muse-wonder-1.0` |
+| OpenCode Go | `openai` | `https://api.opencode.go/v1` | Muse (`muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-wonder-1.0`), `deepseek-v4.1-flash`, `deepseek-v4.1`, `gpt-5-mini` |
+| OpenAI | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini`, `gpt-4o` |
+| Anthropic | `anthropic` | `https://api.anthropic.com/v1` | Muse (`muse-wonder-1.0`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`), `claude-3.5-sonnet`, `claude-3.5-haiku` |
+| Google Gemini | `gemini` | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash`, `gemini-1.5-pro` |
+| Kustom | `openai` | _(isi sendiri)_ | _(isi sendiri)_ |
+
+Catatan:
+
+- **Meta Model API** kompatibel dengan OpenAI (Chat Completions) dan Anthropic (Messages). Untuk memakai model Muse lewat preset **Anthropic**, ubah Base URL ke `https://api.meta.ai/v1`.
+- API key Meta dibuat di dashboard Model API (`MODEL_API_KEY`) dan ditempel di kolom **Kunci API** halaman Koneksi AI — tidak perlu env server.
+- Referensi: <https://dev.meta.ai/docs/api-reference>.
 
 ---
 
@@ -70,7 +92,7 @@ server/src/              (backend)
   flow/schema.ts          validasi graph (Zod) + aturan socket
   flow/store.ts           simpan/muat flow (Redis)
   flow/state.ts           state percakapan (Redis)
-  ai.ts / ai-providers.ts adapter AI multi-protocol
+  ai.ts / ai-providers.ts adapter AI multi-protocol (OpenAI-compatible, Anthropic Messages, Gemini)
   ai-config.ts            persist config AI + enkripsi kunci
   secret-box.ts           AES-256-GCM + hash
   persona.ts / settings.ts config persona & jam operasional
