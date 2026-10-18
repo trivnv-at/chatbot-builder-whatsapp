@@ -41,6 +41,7 @@ import {
   Maximize2,
   Eye
 } from 'lucide-react';
+import PersonaAiPage from './persona-ai-page';
 
 // ===== Tipe data socket (mengacu Node Editor Blender) =====
 const SOCKET_TYPES = {
@@ -1044,25 +1045,6 @@ function BotListPage({ bots, onOpen, onCreate, onImport, onDelete }) {
             </button>
           </div>
         </div>
-
-        {/* Kartu info Kelola AI */}
-        <section className="mt-4 rounded-xl border border-[#E2E8F0] bg-white p-4 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h3 className="flex items-center gap-2 text-sm font-semibold text-[#191C1E]">
-                <Bot className="h-4 w-4 text-[#00695F]" />
-                Kelola AI
-              </h3>
-              <p className="mt-1 max-w-2xl text-[11px] leading-relaxed text-[#6F7977]">
-                Atur model AI, instruksi sistem, dan batas pengetahuan yang dipakai semua chatbot.
-                Perubahan di sini berlaku ke seluruh alur setelah disimpan.
-              </p>
-            </div>
-            <button className="flex h-8 shrink-0 items-center rounded-lg bg-[#00695F] px-3.5 text-xs font-semibold text-white transition hover:bg-[#004F47]">
-              Atur Model AI
-            </button>
-          </div>
-        </section>
 
         {/* Toolbar */}
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -2148,6 +2130,19 @@ export default function App() {
               {bots.length} bot &middot;{' '}
               {bots.filter((b) => b.status === 'Aktif').length} aktif
             </span>
+            <button
+              onClick={() => setView('persona')}
+              aria-pressed={view === 'persona'}
+              title="Atur AI chatbot per stage CRM"
+              className={`flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold transition ${
+                view === 'persona'
+                  ? 'bg-[#CCE8E2] text-[#004F47]'
+                  : 'bg-[#00695F] text-white hover:bg-[#004F47]'
+              }`}
+            >
+              <Bot className="h-4 w-4" />
+              Atur Model AI
+            </button>
           </div>
         )}
       </header>
@@ -2161,6 +2156,8 @@ export default function App() {
           onImport={importBot}
           onDelete={deleteBots}
         />
+      ) : view === 'persona' ? (
+        <PersonaAiPage onBack={() => setView('list')} />
       ) : (
         <div className="relative flex flex-1 overflow-hidden">
         {/* 2. LEFT DRAWER (NODE CATALOG) */}
