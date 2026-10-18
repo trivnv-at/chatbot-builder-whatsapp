@@ -47,7 +47,7 @@ import AiConnectionPage from './ai-connection-page';
 
 // ===== Tipe data socket (mengacu Node Editor Blender) =====
 const SOCKET_TYPES = {
-  flow: { label: 'Flow', color: '#FFFFFF', border: '#4A635F' },
+  flow: { label: 'Alur', color: '#FFFFFF', border: '#4A635F' },
   string: { label: 'String', color: '#EEEE22', border: '#8A8A17' },
   boolean: { label: 'Boolean', color: '#CC44CC', border: '#7A2979' },
   number: { label: 'Angka', color: '#A0E040', border: '#5E8A26' },
@@ -59,7 +59,7 @@ const SOCKET_ORDER = ['flow', 'string', 'boolean', 'number', 'json', 'array'];
 
 // ===== Kategori node (warna header sesuai spec) =====
 const CATEGORIES = {
-  trigger: { label: 'Trigger', color: '#C44040' },
+  trigger: { label: 'Pemicu', color: '#C44040' },
   action: { label: 'Pesan', color: '#449944' },
   logic: { label: 'Logika', color: '#4466CC' },
   crm: { label: 'CRM', color: '#CC9922' },
@@ -98,16 +98,16 @@ const NODE_CATALOG = [
   {
     type: 'onMessageNode',
     category: 'trigger',
-    label: 'On Incoming Message',
+    label: 'Pesan Masuk',
     icon: MessageSquare,
     description: 'Dipicu saat pesan WhatsApp biasa masuk dari kontak atau nomor baru.',
     summary: () => 'Semua pesan masuk',
     inputs: [],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
-      { id: 'body', name: 'Message Body', type: 'string' },
-      { id: 'phone', name: 'Sender Phone', type: 'string' },
-      { id: 'profile', name: 'Sender Profile', type: 'json' }
+      { id: 'out', name: 'Lanjut', type: 'flow' },
+      { id: 'body', name: 'Isi Pesan', type: 'string' },
+      { id: 'phone', name: 'Nomor Pengirim', type: 'string' },
+      { id: 'profile', name: 'Profil Pengirim', type: 'json' }
     ],
     fields: [{ key: 'note', label: 'Catatan', type: 'text', help: 'Label internal, tidak dikirim ke pelanggan.' }],
     defaultData: { note: 'Pesan masuk' }
@@ -115,18 +115,18 @@ const NODE_CATALOG = [
   {
     type: 'keywordMatchNode',
     category: 'trigger',
-    label: 'On Keyword Match',
+    label: 'Kata Kunci Cocok',
     icon: Filter,
-    description: 'Menyaring pesan masuk berdasarkan exact match, contains, atau regex.',
+    description: 'Mengecek apakah pesan memuat kata kunci tertentu.',
     summary: (d) => d.keyword,
-    inputs: [{ id: 'keyword', name: 'Target Keyword', type: 'string' }],
+    inputs: [{ id: 'keyword', name: 'Kata Kunci', type: 'string' }],
     outputs: [
-      { id: 'matched', name: 'Matched Exec', type: 'flow' },
-      { id: 'unmatched', name: 'Unmatched Exec', type: 'flow' },
+      { id: 'matched', name: 'Cocok', type: 'flow' },
+      { id: 'unmatched', name: 'Tidak cocok', type: 'flow' },
       { id: 'term', name: 'Matched Term', type: 'string' }
     ],
     fields: [
-      { key: 'keyword', label: 'Target Keyword', type: 'text', placeholder: 'PROMO' },
+      { key: 'keyword', label: 'Kata Kunci', type: 'text', placeholder: 'PROMO' },
       {
         key: 'matchMode',
         label: 'Mode Pencocokan',
@@ -139,21 +139,21 @@ const NODE_CATALOG = [
   {
     type: 'ctwaNode',
     category: 'trigger',
-    label: 'On Click-to-WhatsApp Ads',
+    label: 'Dari Iklan WhatsApp',
     icon: Zap,
-    description: 'Trigger khusus saat pelanggan masuk pertama kali dari iklan Meta Ads.',
+    description: 'Aktif saat pelanggan datang dari iklan Meta Ads.',
     summary: (d) => d.adId,
     inputs: [],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
-      { id: 'adId', name: 'Ad ID', type: 'string' },
+      { id: 'out', name: 'Lanjut', type: 'flow' },
+      { id: 'adId', name: 'ID Iklan', type: 'string' },
       { id: 'headline', name: 'Headline', type: 'string' },
-      { id: 'sourceUrl', name: 'Source URL', type: 'string' }
+      { id: 'sourceUrl', name: 'Link Sumber', type: 'string' }
     ],
     fields: [
-      { key: 'adId', label: 'Ad ID', type: 'text', placeholder: '120210000000000' },
+      { key: 'adId', label: 'ID Iklan', type: 'text', placeholder: '120210000000000' },
       { key: 'headline', label: 'Headline Iklan', type: 'text' },
-      { key: 'sourceUrl', label: 'Source URL', type: 'text' }
+      { key: 'sourceUrl', label: 'Link Sumber', type: 'text' }
     ],
     defaultData: {
       adId: '120210445566778',
@@ -164,19 +164,19 @@ const NODE_CATALOG = [
   {
     type: 'webhookNode',
     category: 'trigger',
-    label: 'On External Webhook',
+    label: 'Dari Sistem Luar',
     icon: Webhook,
-    description: 'Dipicu panggilan HTTP API dari sistem luar (misal notifikasi pembayaran lunas).',
+    description: 'Aktif saat sistem lain mengirim data ke chatbot.',
     summary: () => 'Webhook masuk',
-    inputs: [{ id: 'secret', name: 'Webhook Secret', type: 'string' }],
+    inputs: [{ id: 'secret', name: 'Kunci Rahasia', type: 'string' }],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
-      { id: 'payload', name: 'Payload Data', type: 'json' }
+      { id: 'out', name: 'Lanjut', type: 'flow' },
+      { id: 'payload', name: 'Data Masuk', type: 'json' }
     ],
     fields: [
       {
         key: 'secret',
-        label: 'Webhook Secret',
+        label: 'Kunci Rahasia',
         type: 'text',
         help: 'Token untuk memverifikasi signature request.'
       }
@@ -188,17 +188,17 @@ const NODE_CATALOG = [
   {
     type: 'sendTextNode',
     category: 'action',
-    label: 'Send Text Message',
+    label: 'Kirim Pesan Teks',
     icon: Send,
     description: 'Kirim pesan teks standar yang mendukung variabel dinamis.',
     summary: (d) => d.body,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'body', name: 'Message Body', type: 'string' },
-      { id: 'vars', name: 'Variables Context', type: 'json', optional: true }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'body', name: 'Isi Pesan', type: 'string' },
+      { id: 'vars', name: 'Data Variabel', type: 'json', optional: true }
     ],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
+      { id: 'out', name: 'Lanjut', type: 'flow' },
       { id: 'wamid', name: 'Message ID', type: 'string' }
     ],
     fields: [
@@ -215,23 +215,23 @@ const NODE_CATALOG = [
   {
     type: 'sendButtonsNode',
     category: 'action',
-    label: 'Send Interactive Buttons',
+    label: 'Kirim Tombol Pilihan',
     icon: MousePointerClick,
-    description: 'Kirim pesan dengan hingga 3 tombol balasan cepat (quick replies).',
+    description: 'Kirim pesan dengan sampai 3 tombol pilihan.',
     summary: (d) => d.header,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'header', name: 'Header Text', type: 'string' },
-      { id: 'options', name: 'Button Options', type: 'array' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'header', name: 'Teks Header', type: 'string' },
+      { id: 'options', name: 'Pilihan Tombol', type: 'array' }
     ],
     outputs: [
-      { id: 'btn1', name: 'Btn 1 Exec', type: 'flow' },
-      { id: 'btn2', name: 'Btn 2 Exec', type: 'flow' },
-      { id: 'btn3', name: 'Btn 3 Exec', type: 'flow' },
-      { id: 'timeout', name: 'Timeout Exec', type: 'flow' }
+      { id: 'btn1', name: 'Tombol 1', type: 'flow' },
+      { id: 'btn2', name: 'Tombol 2', type: 'flow' },
+      { id: 'btn3', name: 'Tombol 3', type: 'flow' },
+      { id: 'timeout', name: 'Waktu habis', type: 'flow' }
     ],
     fields: [
-      { key: 'header', label: 'Header Text', type: 'textarea', rows: 2 },
+      { key: 'header', label: 'Teks Header', type: 'textarea', rows: 2 },
       { key: 'btn1', label: 'Tombol 1', type: 'text' },
       { key: 'btn2', label: 'Tombol 2', type: 'text' },
       { key: 'btn3', label: 'Tombol 3', type: 'text' },
@@ -248,23 +248,23 @@ const NODE_CATALOG = [
   {
     type: 'sendListNode',
     category: 'action',
-    label: 'Send Interactive List',
+    label: 'Kirim Menu Pilihan',
     icon: List,
-    description: 'Kirim pesan menu dropdown (list message) hingga 10 baris item.',
+    description: 'Kirim menu pilihan berisi beberapa item.',
     summary: (d) => d.title,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'title', name: 'List Title', type: 'string' },
-      { id: 'buttonLabel', name: 'Button Label', type: 'string' },
-      { id: 'rows', name: 'Row Items', type: 'array' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'title', name: 'Judul Menu', type: 'string' },
+      { id: 'buttonLabel', name: 'Label Tombol', type: 'string' },
+      { id: 'rows', name: 'Daftar Item', type: 'array' }
     ],
     outputs: [
-      { id: 'selected', name: 'Selected Exec', type: 'flow' },
+      { id: 'selected', name: 'Dipilih', type: 'flow' },
       { id: 'rowId', name: 'Selected Row ID', type: 'string' },
       { id: 'rowTitle', name: 'Selected Row Title', type: 'string' }
     ],
     fields: [
-      { key: 'title', label: 'List Title', type: 'text' },
+      { key: 'title', label: 'Judul Menu', type: 'text' },
       { key: 'buttonLabel', label: 'Label Tombol Menu', type: 'text', placeholder: 'Pilih Layanan' },
       {
         key: 'rows',
@@ -283,22 +283,22 @@ const NODE_CATALOG = [
   {
     type: 'sendMediaNode',
     category: 'action',
-    label: 'Send Media File',
+    label: 'Kirim Gambar/Dokumen',
     icon: Image,
     description: 'Kirim gambar, dokumen, audio, atau video ke pelanggan.',
     summary: (d) => d.mediaType,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'url', name: 'Media URL', type: 'string' },
-      { id: 'mediaType', name: 'Media Type', type: 'string' },
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'url', name: 'Link Media', type: 'string' },
+      { id: 'mediaType', name: 'Tipe Media', type: 'string' },
       { id: 'caption', name: 'Caption', type: 'string', optional: true }
     ],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
+      { id: 'out', name: 'Lanjut', type: 'flow' },
       { id: 'success', name: 'Success', type: 'boolean' }
     ],
     fields: [
-      { key: 'url', label: 'Media URL', type: 'text', placeholder: 'https://...' },
+      { key: 'url', label: 'Link Media', type: 'text', placeholder: 'https://...' },
       { key: 'mediaType', label: 'Tipe Media', type: 'select', options: ['image', 'document', 'audio', 'video'] },
       { key: 'caption', label: 'Caption', type: 'textarea', rows: 2 }
     ],
@@ -309,19 +309,19 @@ const NODE_CATALOG = [
   {
     type: 'conditionNode',
     category: 'logic',
-    label: 'Condition (If / Else)',
+    label: 'Jika / Maka',
     icon: GitBranch,
-    description: 'Menilai ekspresi logika atau membandingkan dua variabel.',
+    description: 'Membandingkan dua nilai untuk memilih jalur.',
     summary: (d) => `${d.operandA} ${d.operator} ${d.operandB}`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
+      { id: 'in', name: 'Masuk', type: 'flow' },
       { id: 'operandA', name: 'Operand A', type: 'string' },
       { id: 'operator', name: 'Operator', type: 'string' },
       { id: 'operandB', name: 'Operand B', type: 'string' }
     ],
     outputs: [
-      { id: 'true', name: 'True Exec', type: 'flow' },
-      { id: 'false', name: 'False Exec', type: 'flow' }
+      { id: 'true', name: 'Ya', type: 'flow' },
+      { id: 'false', name: 'Tidak', type: 'flow' }
     ],
     fields: [
       { key: 'operandA', label: 'Operand A', type: 'text', placeholder: '{{lead.score}}' },
@@ -338,17 +338,17 @@ const NODE_CATALOG = [
   {
     type: 'waitInputNode',
     category: 'logic',
-    label: 'Wait for User Input',
+    label: 'Tunggu Balasan',
     icon: Clock,
     description: 'Menahan alur untuk menunggu balasan bebas dari pelanggan.',
     summary: (d) => `${d.timeoutSeconds ?? 300} detik`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
+      { id: 'in', name: 'Masuk', type: 'flow' },
       { id: 'timeout', name: 'Timeout (detik)', type: 'number' }
     ],
     outputs: [
-      { id: 'reply', name: 'On Reply Exec', type: 'flow' },
-      { id: 'timeoutOut', name: 'On Timeout Exec', type: 'flow' },
+      { id: 'reply', name: 'Ada balasan', type: 'flow' },
+      { id: 'timeoutOut', name: 'Waktu habis', type: 'flow' },
       { id: 'replyText', name: 'User Reply Text', type: 'string' }
     ],
     fields: [{ key: 'timeoutSeconds', label: 'Batas Waktu (detik)', type: 'number', step: 10 }],
@@ -357,37 +357,37 @@ const NODE_CATALOG = [
   {
     type: 'delayNode',
     category: 'logic',
-    label: 'Delay / Typing Simulation',
+    label: 'Jeda / Efek Mengetik',
     icon: Timer,
     description: 'Memberi jeda agar balasan terasa seperti diketik manusia.',
     summary: (d) => `${d.duration ?? 2.5} detik`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
+      { id: 'in', name: 'Masuk', type: 'flow' },
       { id: 'duration', name: 'Durasi (detik)', type: 'number' }
     ],
-    outputs: [{ id: 'out', name: 'Exec Out', type: 'flow' }],
+    outputs: [{ id: 'out', name: 'Lanjut', type: 'flow' }],
     fields: [{ key: 'duration', label: 'Durasi (detik)', type: 'number', step: 0.5 }],
     defaultData: { duration: 2.5 }
   },
   {
     type: 'switchNode',
     category: 'logic',
-    label: 'Switch / Route Case',
+    label: 'Pilih Cabang',
     icon: Split,
-    description: 'Membagi alur ke beberapa cabang berdasarkan nilai unik variabel.',
+    description: 'Memilih cabang berdasarkan nilai tertentu.',
     summary: (d) => d.target,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'target', name: 'Target Variable', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'target', name: 'Sumber Nilai', type: 'string' }
     ],
     outputs: [
-      { id: 'caseA', name: 'Case A Exec', type: 'flow' },
-      { id: 'caseB', name: 'Case B Exec', type: 'flow' },
-      { id: 'caseC', name: 'Case C Exec', type: 'flow' },
-      { id: 'default', name: 'Default Exec', type: 'flow' }
+      { id: 'caseA', name: 'Kasus A', type: 'flow' },
+      { id: 'caseB', name: 'Kasus B', type: 'flow' },
+      { id: 'caseC', name: 'Kasus C', type: 'flow' },
+      { id: 'default', name: 'Lainnya', type: 'flow' }
     ],
     fields: [
-      { key: 'target', label: 'Target Variable', type: 'text', placeholder: '{{last.reply}}' },
+      { key: 'target', label: 'Sumber Nilai', type: 'text', placeholder: '{{last.reply}}' },
       { key: 'caseA', label: 'Nilai Case A', type: 'text' },
       { key: 'caseB', label: 'Nilai Case B', type: 'text' },
       { key: 'caseC', label: 'Nilai Case C', type: 'text' }
@@ -399,33 +399,33 @@ const NODE_CATALOG = [
   {
     type: 'updateStageNode',
     category: 'crm',
-    label: 'Update Lead Stage',
+    label: 'Pindah Tahap Prospek',
     icon: UserCheck,
-    description: 'Memindahkan lead ke tahap pipeline (Kanban stage) tertentu.',
+    description: 'Memindahkan pelanggan ke tahap penjualan tertentu.',
     summary: (d) => d.stageId,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'stageId', name: 'Target Stage ID', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'stageId', name: 'Tahap Tujuan', type: 'string' }
     ],
-    outputs: [{ id: 'out', name: 'Exec Out', type: 'flow' }],
+    outputs: [{ id: 'out', name: 'Lanjut', type: 'flow' }],
     fields: [{ key: 'stageId', label: 'Stage Tujuan', type: 'text', placeholder: 'Qualified Lead' }],
     defaultData: { stageId: 'Qualified Lead' }
   },
   {
     type: 'assignAgentNode',
     category: 'crm',
-    label: 'Assign to Agent (Handoff)',
+    label: 'Alihkan ke Admin/CS',
     icon: UserPlus,
-    description: 'Mengalihkan percakapan dari bot ke agen manusia (CS/Sales).',
+    description: 'Alihkan obrolan dari bot ke admin/CS.',
     summary: (d) => d.department,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'department', name: 'Department / Agent ID', type: 'string' },
-      { id: 'mode', name: 'Assignment Mode', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'department', name: 'Tim/Agen', type: 'string' },
+      { id: 'mode', name: 'Cara Bagi', type: 'string' }
     ],
     outputs: [
-      { id: 'assigned', name: 'Assigned Exec', type: 'flow' },
-      { id: 'noAgent', name: 'No Agent Available', type: 'flow' }
+      { id: 'assigned', name: 'Diteruskan', type: 'flow' },
+      { id: 'noAgent', name: 'Tidak ada agen', type: 'flow' }
     ],
     fields: [
       { key: 'department', label: 'Tim / Agen', type: 'text', placeholder: 'Sales' },
@@ -447,16 +447,16 @@ const NODE_CATALOG = [
   {
     type: 'customFieldNode',
     category: 'crm',
-    label: 'Set Custom Field',
+    label: 'Simpan Data ke CRM',
     icon: Tag,
-    description: 'Menyimpan informasi hasil obrolan ke profil kontak di CRM.',
+    description: 'Menyimpan info dari obrolan ke data pelanggan.',
     summary: (d) => `${d.fieldName} = ${d.fieldValue}`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'fieldName', name: 'Field Name', type: 'string' },
-      { id: 'fieldValue', name: 'Field Value', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'fieldName', name: 'Nama Field', type: 'string' },
+      { id: 'fieldValue', name: 'Nilai Field', type: 'string' }
     ],
-    outputs: [{ id: 'out', name: 'Exec Out', type: 'flow' }],
+    outputs: [{ id: 'out', name: 'Lanjut', type: 'flow' }],
     fields: [
       { key: 'fieldName', label: 'Nama Field', type: 'text', placeholder: 'lokasi_domisili' },
       { key: 'fieldValue', label: 'Nilai Field', type: 'text' }
@@ -466,17 +466,17 @@ const NODE_CATALOG = [
   {
     type: 'leadScoreNode',
     category: 'crm',
-    label: 'Update Lead Score',
+    label: 'Tambah Skor Prospek',
     icon: Gauge,
-    description: 'Menambah atau mengurangi skor potensi penjualan lead.',
+    description: 'Menambah atau mengurangi nilai peluang pembeli.',
     summary: (d) => `${(d.scoreValue ?? 0) > 0 ? '+' : ''}${d.scoreValue ?? 0} poin`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'scoreValue', name: 'Score Value', type: 'number' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'scoreValue', name: 'Nilai Skor', type: 'number' }
     ],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
-      { id: 'totalScore', name: 'Updated Total Score', type: 'number' }
+      { id: 'out', name: 'Lanjut', type: 'flow' },
+      { id: 'totalScore', name: 'Total Skor', type: 'number' }
     ],
     fields: [{ key: 'scoreValue', label: 'Perubahan Skor', type: 'number', step: 5, help: 'Boleh negatif, contoh -5.' }],
     defaultData: { scoreValue: 10 }
@@ -489,8 +489,8 @@ const NODE_CATALOG = [
     description: 'Membuat jadwal janji temu; ditolak bila di luar jam operasional.',
     summary: (d) => d.requestedAt || 'Waktu janji',
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'requestedAt', name: 'Requested At', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'requestedAt', name: 'Waktu Janji', type: 'string' }
     ],
     outputs: [
       { id: 'created', name: 'Janji Dibuat', type: 'flow' },
@@ -512,25 +512,25 @@ const NODE_CATALOG = [
   {
     type: 'aiAgentNode',
     category: 'ai',
-    label: 'AI Stage Agent',
+    label: 'Balas dengan AI',
     icon: Bot,
-    description: 'Memproses pesan pelanggan dengan LLM berbasis instruksi dan data CRM.',
+    description: 'Membuat balasan otomatis dengan AI sesuai instruksi kamu.',
     summary: (d) => d.model,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'systemPrompt', name: 'System Prompt', type: 'string' },
-      { id: 'userInput', name: 'User Input', type: 'string' },
-      { id: 'crmContext', name: 'CRM Context', type: 'json' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'systemPrompt', name: 'Instruksi untuk AI', type: 'string' },
+      { id: 'userInput', name: 'Pesan Pelanggan', type: 'string' },
+      { id: 'crmContext', name: 'Data CRM', type: 'json' }
     ],
     outputs: [
-      { id: 'out', name: 'Exec Out', type: 'flow' },
-      { id: 'aiResponse', name: 'AI Response', type: 'string' },
-      { id: 'intent', name: 'Detected Intent', type: 'string' }
+      { id: 'out', name: 'Lanjut', type: 'flow' },
+      { id: 'aiResponse', name: 'Balasan AI', type: 'string' },
+      { id: 'intent', name: 'Maksud Pelanggan', type: 'string' }
     ],
     fields: [
       {
         key: 'systemPrompt',
-        label: 'System Prompt',
+        label: 'Instruksi untuk AI',
         type: 'textarea',
         rows: 4,
         help: 'Panduan karakter dan batas pengetahuan AI.'
@@ -545,19 +545,19 @@ const NODE_CATALOG = [
   {
     type: 'sentimentNode',
     category: 'ai',
-    label: 'Sentiment Analysis',
+    label: 'Baca Nada Pesan',
     icon: Smile,
-    description: 'Menganalisis emosi dan nada bahasa pada pesan pelanggan.',
+    description: 'Menilai pesan pelanggan: positif, netral, atau negatif.',
     summary: (d) => `Ambang: ${d.threshold ?? 0.6}`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'inputText', name: 'Input Text', type: 'string' }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'inputText', name: 'Teks Sumber', type: 'string' }
     ],
     outputs: [
-      { id: 'positive', name: 'Positive Exec', type: 'flow' },
-      { id: 'neutral', name: 'Neutral Exec', type: 'flow' },
-      { id: 'negative', name: 'Negative Exec', type: 'flow' },
-      { id: 'score', name: 'Sentiment Score', type: 'number' }
+      { id: 'positive', name: 'Positif', type: 'flow' },
+      { id: 'neutral', name: 'Netral', type: 'flow' },
+      { id: 'negative', name: 'Negatif', type: 'flow' },
+      { id: 'score', name: 'Skor Nada', type: 'number' }
     ],
     fields: [
       { key: 'inputText', label: 'Teks Sumber', type: 'text', placeholder: '{{last.reply}}' },
@@ -576,26 +576,26 @@ const NODE_CATALOG = [
   {
     type: 'httpRequestNode',
     category: 'integration',
-    label: 'HTTP Request (API Client)',
+    label: 'Panggil API Luar',
     icon: Globe,
-    description: 'Memanggil REST API server luar di tengah alur percakapan.',
+    description: 'Menghubungi layanan lain lewat internet.',
     summary: (d) => `${d.method} ${d.url}`,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'method', name: 'Method', type: 'string' },
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'method', name: 'Metode', type: 'string' },
       { id: 'url', name: 'URL', type: 'string' },
-      { id: 'headersBody', name: 'Headers & Body', type: 'json' }
+      { id: 'headersBody', name: 'Header & Isi', type: 'json' }
     ],
     outputs: [
-      { id: 'success', name: 'Success 200 Exec', type: 'flow' },
-      { id: 'error', name: 'Error Exec', type: 'flow' },
-      { id: 'statusCode', name: 'Status Code', type: 'number' },
-      { id: 'responseData', name: 'Response Data', type: 'json' }
+      { id: 'success', name: 'Sukses', type: 'flow' },
+      { id: 'error', name: 'Gagal', type: 'flow' },
+      { id: 'statusCode', name: 'Kode Status', type: 'number' },
+      { id: 'responseData', name: 'Data Balasan', type: 'json' }
     ],
     fields: [
-      { key: 'method', label: 'Method', type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE'] },
-      { key: 'url', label: 'URL Endpoint', type: 'text', placeholder: 'https://api.example.com/orders' },
-      { key: 'headersBody', label: 'Headers & Body (JSON)', type: 'textarea', rows: 3 }
+      { key: 'method', label: 'Metode', type: 'select', options: ['GET', 'POST', 'PUT', 'DELETE'] },
+      { key: 'url', label: 'Alamat URL', type: 'text', placeholder: 'https://api.example.com/orders' },
+      { key: 'headersBody', label: 'Header & Isi (JSON)', type: 'textarea', rows: 3 }
     ],
     defaultData: {
       method: 'POST',
@@ -606,18 +606,18 @@ const NODE_CATALOG = [
   {
     type: 'capiNode',
     category: 'integration',
-    label: 'Meta Conversions API',
+    label: 'Lapor Konversi ke Meta',
     icon: Target,
-    description: 'Melaporkan event konversi server-to-server ke Meta Ads Manager.',
+    description: 'Mengirim data konversi ke Meta untuk pelacakan iklan.',
     summary: (d) => d.eventName,
     inputs: [
-      { id: 'in', name: 'Exec In', type: 'flow' },
-      { id: 'eventName', name: 'Event Name', type: 'string' },
-      { id: 'currencyValue', name: 'Currency Value', type: 'number', optional: true }
+      { id: 'in', name: 'Masuk', type: 'flow' },
+      { id: 'eventName', name: 'Nama Event', type: 'string' },
+      { id: 'currencyValue', name: 'Nilai Transaksi', type: 'number', optional: true }
     ],
-    outputs: [{ id: 'out', name: 'Exec Out', type: 'flow' }],
+    outputs: [{ id: 'out', name: 'Lanjut', type: 'flow' }],
     fields: [
-      { key: 'eventName', label: 'Event', type: 'select', options: ['Lead', 'Purchase', 'Contact', 'Schedule'] },
+      { key: 'eventName', label: 'Jenis Event', type: 'select', options: ['Lead', 'Purchase', 'Contact', 'Schedule'] },
       { key: 'currencyValue', label: 'Nilai Transaksi', type: 'number', step: 1000, optional: true }
     ],
     defaultData: { eventName: 'Lead', currencyValue: 150000 }
@@ -1063,14 +1063,14 @@ function EmptyCanvasState({ onOpenCatalog }) {
         </div>
         <h2 className="text-sm font-semibold text-[#191C1E]">Canvas masih kosong</h2>
         <p className="mt-1 text-[11px] leading-relaxed text-[#6F7977]">
-          Tarik node dari katalog di kiri untuk mulai menyusun alur chatbot.
+          Tarik blok dari daftar di kiri untuk mulai menyusun alur chatbot.
         </p>
         <button
           onClick={onOpenCatalog}
           className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#00695F] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#004F47] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#00695F]/20"
         >
           <Plus className="h-4 w-4" />
-          Buka Katalog Node
+          Buka Daftar Node
         </button>
       </div>
     </div>
@@ -2184,7 +2184,7 @@ export default function App() {
 
     if (outSide.type !== inSide.type) {
       flashNotice(
-        `Socket tidak cocok: ${SOCKET_TYPES[outSide.type].label} ≠ ${SOCKET_TYPES[inSide.type].label}`
+        `Koneksi tidak cocok: ${SOCKET_TYPES[outSide.type].label} ≠ ${SOCKET_TYPES[inSide.type].label}`
       );
       setConnectingStart(null);
       return;
@@ -2533,7 +2533,7 @@ export default function App() {
               </div>
               <p className="hidden truncate text-[11px] text-[#6F7977] sm:block">
                 {view === 'builder'
-                  ? 'Susun alur, sambungkan socket, lalu aktifkan pipeline'
+                  ? 'Susun alur percakapan, sambungkan antar-node, lalu aktifkan'
                   : 'Bikin alur chatbot WhatsApp untuk iklan Meta Ads'}
               </p>
             </div>
@@ -2627,7 +2627,7 @@ export default function App() {
           <div className="flex items-center justify-between gap-2 border-b border-[#E2E8F0] px-3.5 py-3">
             <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-[#3E4947]">
               <Plus className="h-4 w-4 text-[#00695F]" />
-              Katalog Node
+              Daftar Node
             </span>
             <span className="rounded-full border border-[#94E5D8] bg-[#CCE8E2] px-2 py-0.5 text-[10px] font-semibold text-[#004F47]">
               {filteredCatalog.length} node
