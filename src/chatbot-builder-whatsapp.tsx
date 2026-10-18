@@ -662,6 +662,190 @@ function buildGraph(spec) {
   return { nodes, edges };
 }
 
+// ===== Galeri template bot (tampil sebelum masuk kanvas) =====
+const BOT_CATEGORIES = [
+  { id: 'all', label: 'Semua template' },
+  { id: 'generate_leads', label: 'Hasilkan lead' },
+  { id: 'business_info', label: 'Info bisnis' },
+  { id: 'nurture_leads', label: 'Memelihara lead' },
+  { id: 'reduce_busywork', label: 'Mengurangi kesibukan' },
+  { id: 'automate_booking', label: 'Notifikasi booking' }
+];
+
+const BOT_CHANNELS = [
+  { id: 'wa', label: 'WhatsApp Business' },
+  { id: 'telegram', label: 'Telegram' },
+  { id: 'instagram', label: 'Instagram' },
+  { id: 'tiktok', label: 'TikTok' },
+  { id: 'fb_messenger', label: 'Messenger' },
+  { id: 'mail', label: 'Email' },
+  { id: 'crm_plugin', label: 'Live chat' }
+];
+
+const ALL_CHANNELS = ['wa', 'telegram', 'instagram', 'tiktok', 'fb_messenger', 'mail', 'crm_plugin'];
+
+const BOT_TEMPLATES = [
+  {
+    id: 'welcome_bot',
+    title: 'Bot sambutan',
+    category: 'business_info',
+    channelIds: ALL_CHANNELS,
+    icon: MessageSquare,
+    tint: 'from-[#00695F] to-[#004F47]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'sendTextNode', label: 'Sapaan', data: { body: 'Halo! Terima kasih sudah menghubungi kami. Ada yang bisa dibantu?' } },
+      { type: 'sendButtonsNode', label: 'Menu Bantuan', data: { header: 'Pilih topik:' } },
+      { type: 'aiAgentNode', label: 'AI Menjawab' }
+    ]
+  },
+  {
+    id: 'receive_booking',
+    title: 'Terima pemesanan janji temu',
+    category: 'automate_booking',
+    channelIds: ['wa', 'instagram', 'fb_messenger'],
+    icon: CalendarClock,
+    tint: 'from-[#1D4ED8] to-[#1E3A8A]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'aiAgentNode', label: 'AI Jadwalkan' },
+      { type: 'appointmentNode', label: 'Buat Janji' },
+      { type: 'sendTextNode', label: 'Konfirmasi', data: { body: 'Janji temu kamu sudah dicatat. Sampai jumpa!' } }
+    ]
+  },
+  {
+    id: 'capture_callback',
+    title: 'Tangkap lead yang menginginkan panggilan',
+    category: 'generate_leads',
+    channelIds: ['wa', 'tiktok', 'instagram'],
+    icon: UserPlus,
+    tint: 'from-[#B26A00] to-[#7C4A00]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'aiAgentNode', label: 'AI Kualifikasi' },
+      { type: 'customFieldNode', label: 'Simpan Kontak', data: { fieldName: 'nomor_telepon' } },
+      { type: 'assignAgentNode', label: 'Alihkan ke Sales' }
+    ]
+  },
+  {
+    id: 'qualify_budget',
+    title: 'Kualifikasi budget lead',
+    category: 'generate_leads',
+    channelIds: ['wa', 'fb_messenger'],
+    icon: Gauge,
+    tint: 'from-[#7C3AED] to-[#4C1D95]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'aiAgentNode', label: 'AI Kualifikasi' },
+      { type: 'leadScoreNode', label: 'Tambah Skor', data: { scoreValue: 25 } },
+      { type: 'updateStageNode', label: 'Naik Tahap', data: { stageId: 'Qualified' } }
+    ]
+  },
+  {
+    id: 'business_faq',
+    title: 'Info bisnis & FAQ',
+    category: 'business_info',
+    channelIds: ALL_CHANNELS,
+    icon: Bot,
+    tint: 'from-[#0E7490] to-[#164E63]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'keywordMatchNode', label: 'Kata Kunci', data: { keyword: 'harga, jam buka, alamat' } },
+      { type: 'aiAgentNode', label: 'AI Menjawab' },
+      { type: 'sendTextNode', label: 'Kirim Jawaban' }
+    ]
+  },
+  {
+    id: 'keyword_reply',
+    title: 'Membalas kata kunci',
+    category: 'reduce_busywork',
+    channelIds: ['wa', 'telegram', 'instagram', 'tiktok'],
+    icon: Zap,
+    tint: 'from-[#D97706] to-[#92400E]',
+    steps: [
+      { type: 'keywordMatchNode', label: 'Kata Kunci Promo', data: { keyword: 'PROMO' } },
+      { type: 'sendTextNode', label: 'Kirim Info', data: { body: 'Ini info promo terbaru untuk kamu!' } }
+    ]
+  },
+  {
+    id: 'offline_message',
+    title: 'Terima pesan saat kamu offline',
+    category: 'reduce_busywork',
+    channelIds: ALL_CHANNELS,
+    icon: Clock,
+    tint: 'from-[#334155] to-[#0F172A]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'sendTextNode', label: 'Balas Otomatis', data: { body: 'Kami sedang offline. Pesanmu akan dibalas saat jam kerja.' } },
+      { type: 'customFieldNode', label: 'Simpan Pesan', data: { fieldName: 'pesan_offline' } }
+    ]
+  },
+  {
+    id: 'collect_feedback',
+    title: 'Kumpulkan masukan dengan emoji',
+    category: 'nurture_leads',
+    channelIds: ['wa', 'fb_messenger', 'instagram'],
+    icon: Smile,
+    tint: 'from-[#DB2777] to-[#831843]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'sendButtonsNode', label: 'Tanya Kepuasan', data: { header: 'Seberapa puas kamu?', btn1: '😍 Puas', btn2: '🙂 Biasa', btn3: '😞 Kurang' } },
+      { type: 'sentimentNode', label: 'Baca Nada' }
+    ]
+  },
+  {
+    id: 'schedule_promo',
+    title: 'Jadwalkan pesan promo',
+    category: 'nurture_leads',
+    channelIds: ['wa', 'mail', 'telegram'],
+    icon: Timer,
+    tint: 'from-[#0D9488] to-[#115E59]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'delayNode', label: 'Jeda', data: { duration: 3 } },
+      { type: 'sendTextNode', label: 'Kirim Promo', data: { body: 'Jangan lewatkan promo spesial kami hari ini!' } }
+    ]
+  },
+  {
+    id: 'route_requests',
+    title: 'Arahkan permintaan ke orang yang tepat',
+    category: 'reduce_busywork',
+    channelIds: ALL_CHANNELS,
+    icon: Split,
+    tint: 'from-[#4338CA] to-[#312E81]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'conditionNode', label: 'Cek Departemen', data: { operandA: '{{lastReply}}', operator: 'contains', operandB: 'sales' } },
+      { type: 'assignAgentNode', label: 'Alihkan ke Tim' }
+    ]
+  },
+  {
+    id: 'send_promo_code',
+    title: 'Kirim kode promo berdasarkan kata kunci',
+    category: 'nurture_leads',
+    channelIds: ['wa', 'instagram', 'tiktok'],
+    icon: Tag,
+    tint: 'from-[#C2410C] to-[#7C2D12]',
+    steps: [
+      { type: 'keywordMatchNode', label: 'Kata Kunci Kode', data: { keyword: 'KODE' } },
+      { type: 'sendTextNode', label: 'Kirim Barcode', data: { body: 'Kode promomu: HEMAT10. Berlaku sampai akhir bulan.' } }
+    ]
+  },
+  {
+    id: 'follow_up_booking',
+    title: 'Follow up konfirmasi perjanjian',
+    category: 'automate_booking',
+    channelIds: ['wa', 'mail'],
+    icon: CalendarClock,
+    tint: 'from-[#0369A1] to-[#0C4A6E]',
+    steps: [
+      { type: 'onMessageNode', label: 'Pesan Masuk' },
+      { type: 'sendButtonsNode', label: 'Konfirmasi', data: { header: 'Konfirmasi jadwal janji temu kamu?', btn1: 'Ya, konfirmasi', btn2: 'Jadwal ulang' } },
+      { type: 'appointmentNode', label: 'Catat Janji' }
+    ]
+  }
+];
+
 const BOTS = [
   {
     id: 'bot-1',
@@ -999,6 +1183,214 @@ function StatusPill({ status }) {
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {status}
     </span>
+  );
+}
+
+function ChannelCheck({ checked, label, onChange }) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      onClick={onChange}
+      className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition ${
+        checked ? 'bg-[#E8F5F2] text-[#004F47]' : 'text-[#3E4947] hover:bg-[#F2F4F6]'
+      }`}
+    >
+      <span className="truncate">{label}</span>
+      <span
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition ${
+          checked ? 'border-[#00695F] bg-[#00695F] text-white' : 'border-[#BEC9C6] bg-white'
+        }`}
+      >
+        {checked && <Check className="h-3 w-3" />}
+      </span>
+    </button>
+  );
+}
+
+function BotTemplatesLibrary({ onClose, onPick, onBlank }) {
+  const [category, setCategory] = useState('all');
+  const [channels, setChannels] = useState([]);
+  const [search, setSearch] = useState('');
+
+  const allChannels = channels.length === BOT_CHANNELS.length;
+  const toggleChannel = (id) =>
+    setChannels((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
+  const toggleAll = () => setChannels(allChannels ? [] : BOT_CHANNELS.map((c) => c.id));
+
+  const categoryCounts = useMemo(() => {
+    const counts = { all: BOT_TEMPLATES.length };
+    BOT_CATEGORIES.forEach((cat) => {
+      if (cat.id === 'all') return;
+      counts[cat.id] = BOT_TEMPLATES.filter((t) => t.category === cat.id).length;
+    });
+    return counts;
+  }, []);
+
+  const query = search.trim().toLowerCase();
+  const templates = BOT_TEMPLATES.filter((t) => {
+    const inCategory = category === 'all' || t.category === category;
+    const inChannel = channels.length === 0 || t.channelIds.some((c) => channels.includes(c));
+    const inSearch = !query || t.title.toLowerCase().includes(query);
+    return inCategory && inChannel && inSearch;
+  });
+
+  return (
+    <div className="flex-1 overflow-y-auto bg-[#F8F9FB]">
+      <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6">
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-[#191C1E]">Pilih template bot</h2>
+            <p className="mt-0.5 text-xs text-[#6F7977]">
+              Mulai cepat dari template, atau susun alur sendiri dari kanvas kosong.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Tutup galeri template"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#DDE4E6] bg-white text-[#3E4947] transition hover:bg-[#F6F9F8]"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-12">
+          {/* Sidebar filter */}
+          <aside className="flex flex-col gap-4 lg:col-span-3">
+            <button
+              type="button"
+              onClick={onBlank}
+              className="flex items-center gap-3 rounded-xl border border-[#00695F] bg-[#E8F5F2] p-3.5 text-left transition hover:bg-[#DCF0EB]"
+            >
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#00695F] text-white">
+                <Plus className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-xs font-semibold text-[#004F47]">Mulai dari awal</span>
+                <span className="block text-[10px] text-[#0F766E]">Kanvas kosong</span>
+              </span>
+            </button>
+
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wide text-[#8A9492]">
+                Kategori
+              </h3>
+              <div className="mt-1.5 flex flex-col gap-0.5">
+                {BOT_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategory(cat.id)}
+                    className={`flex items-center justify-between gap-2 rounded-lg px-2.5 py-2 text-xs font-medium transition ${
+                      category === cat.id
+                        ? 'bg-[#E8F5F2] font-semibold text-[#004F47]'
+                        : 'text-[#3E4947] hover:bg-[#F2F4F6]'
+                    }`}
+                  >
+                    <span className="truncate">{cat.label}</span>
+                    <span className="shrink-0 rounded-full bg-[#E4E9EB] px-1.5 py-0.5 text-[10px] font-semibold text-[#6F7977]">
+                      {categoryCounts[cat.id] ?? 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-white p-3 shadow-sm">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-[10px] font-semibold uppercase tracking-wide text-[#8A9492]">
+                  Saluran
+                </h3>
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-[10px] font-semibold text-[#00695F] hover:underline"
+                >
+                  {allChannels ? 'Kosongkan' : 'Pilih semua'}
+                </button>
+              </div>
+              <div className="mt-1.5 flex flex-col gap-0.5">
+                {BOT_CHANNELS.map((ch) => (
+                  <ChannelCheck
+                    key={ch.id}
+                    checked={channels.includes(ch.id)}
+                    label={ch.label}
+                    onChange={() => toggleChannel(ch.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Daftar template */}
+          <div className="lg:col-span-9">
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 flex-1 items-center rounded-lg border border-[#D5DDDC] bg-white px-3 focus-within:border-[#00695F] focus-within:ring-4 focus-within:ring-[#00695F]/10">
+                <Search className="mr-2 h-3.5 w-3.5 shrink-0 text-[#6F7977]" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Cari template..."
+                  className="w-full bg-transparent text-xs text-[#191C1E] outline-none placeholder-[#8A9492]"
+                />
+              </div>
+              <span className="shrink-0 rounded-full bg-[#E4E9EB] px-2.5 py-1 text-[11px] font-semibold text-[#3E4947]">
+                {templates.length} template
+              </span>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3 pb-8 sm:grid-cols-2 xl:grid-cols-3">
+              {templates.map((t) => {
+                const Icon = t.icon;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => onPick(t)}
+                    className="group flex flex-col rounded-xl border border-[#E2E8F0] bg-white p-3.5 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-[#00695F] hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${t.tint} text-white`}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </span>
+                      <span className="text-xs font-semibold leading-snug text-[#191C1E]">
+                        {t.title}
+                      </span>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-1">
+                      {t.steps.slice(0, 3).map((step, i) => (
+                        <span
+                          key={`${t.id}-${i}`}
+                          className="rounded bg-[#F2F4F6] px-1.5 py-0.5 text-[10px] font-medium text-[#6F7977]"
+                        >
+                          {step.label}
+                        </span>
+                      ))}
+                      {t.steps.length > 3 && (
+                        <span className="text-[10px] font-semibold text-[#8A9492]">
+                          +{t.steps.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+              {templates.length === 0 && (
+                <div className="col-span-full rounded-xl border border-dashed border-[#BEC9C6] p-8 text-center text-xs text-[#6F7977]">
+                  Tidak ada template yang cocok. Coba ubah kategori, saluran, atau kata kunci.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1520,6 +1912,22 @@ export default function App() {
         { type: 'onMessageNode', label: 'Pesan Masuk' },
         { type: 'sendTextNode', label: 'Balasan Pembuka' }
       ])
+    };
+    setBots((prev) => [bot, ...prev]);
+    enterBuilder(bot);
+  };
+
+  const createFromTemplate = (template) => {
+    const bot = {
+      id: `bot_${Date.now()}`,
+      name: template.title,
+      status: 'Draf',
+      updatedAt: 'baru saja',
+      triggers: ['Pesan baru'],
+      conversion: 0,
+      totalLaunches: 0,
+      activeSessions: 0,
+      graph: buildGraph(template.steps)
     };
     setBots((prev) => [bot, ...prev]);
     enterBuilder(bot);
@@ -2191,9 +2599,15 @@ export default function App() {
         <BotListPage
           bots={bots}
           onOpen={openBot}
-          onCreate={createBot}
+          onCreate={() => setView('templates')}
           onImport={importBot}
           onDelete={deleteBots}
+        />
+      ) : view === 'templates' ? (
+        <BotTemplatesLibrary
+          onClose={() => setView('list')}
+          onPick={createFromTemplate}
+          onBlank={createBot}
         />
       ) : view === 'persona' ? (
         <PersonaAiPage
