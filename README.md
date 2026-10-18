@@ -20,7 +20,7 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 - [API Endpoints](#api-endpoints)
 - [Tipe Node Alur](#tipe-node-alur)
 - [Keamanan](#keamanan)
-- [Testing & CI](#testing--ci)
+- [Testing &amp; CI](#testing--ci)
 - [Struktur Repo](#struktur-repo)
 
 ---
@@ -28,6 +28,7 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 ## Fitur
 
 ### Builder (frontend)
+
 - **Canvas node bertipe socket** — node disambungkan lewat socket bertipe (`flow`, `string`, `number`, `boolean`, `json`, `array`); koneksi divalidasi agar tipe cocok.
 - **Galeri template** — 12 template siap pakai (sambut pelanggan, janji temu, kualifikasi lead, dsb.) dengan filter kategori & saluran, judul ramah pengguna.
 - **Persona AI** — peran bot, gaya bicara, sumber pengetahuan, data wajib, dan jam kerja bot. Config disimpan ke backend.
@@ -35,11 +36,12 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 - **Pratinjau & uji** — panel simulasi percakapan dan tombol Uji Koneksi.
 
 ### Engine (backend)
+
 - **Eksekusi alur event-based** — tiap pesan masuk dijadikan job; worker menjalankan graph node-by-node sampai selesai / menunggu / handoff.
 - **Antrian & resume** — BullMQ (`inbound`, `resume`) untuk pesan dan jeda/waktu-tunggu.
 - **Pengiriman WhatsApp Cloud API** — teks, tombol (≤3), list (≤10), media. Otomatis **mock** bila token kosong.
 - **Meta Conversions API (CAPI)** — lapor event konversi server-to-server (nomor di-hash SHA-256).
-- **AI provider-agnostic** — `aiAgentNode` memakai kredensial dari halaman Koneksi AI (default Meta Model API / Muse; fallback ke env Gemini).
+- **AI provider-agnostic** — `aiAgentNode` memakai kredensial dari halaman Koneksi AI (default Meta Model API / Muse; fallback env `MODEL_API_KEY`).
 - **HTTP Request node aman** — hanya HTTPS publik, blokir IP privat/localhost (anti-SSRF), redirect manual.
 - **Guard alur** — `MAX_STEPS`, `MAX_NODE_VISITS` (anti-loop), deduplikasi pesan, verifikasi signature webhook.
 
@@ -49,20 +51,20 @@ Visual builder untuk chatbot WhatsApp: susun alur percakapan dengan editor node 
 
 Halaman **Koneksi AI** menyediakan preset berikut (base URL dan model tetap bisa diubah manual):
 
-| Preset | Protocol | Base URL | Model |
-|---|---|---|---|
-| **Meta Model API** (default) | `openai` | `https://api.meta.ai/v1` | `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`, `muse-wonder-1.0` |
-| OpenCode Go | `openai` | `https://api.opencode.go/v1` | Muse (`muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-wonder-1.0`), `deepseek-v4.1-flash`, `deepseek-v4.1`, `gpt-5-mini` |
-| OpenAI | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini`, `gpt-4o` |
-| Anthropic | `anthropic` | `https://api.anthropic.com/v1` | Muse (`muse-wonder-1.0`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`), `claude-3.5-sonnet`, `claude-3.5-haiku` |
-| Google Gemini | `gemini` | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash`, `gemini-1.5-pro` |
-| Kustom | `openai` | _(isi sendiri)_ | _(isi sendiri)_ |
+| Preset                             | Protocol      | Base URL                                             | Model                                                                                                                                                               |
+| ---------------------------------- | ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Meta Model API** (default) | `openai`    | `https://api.meta.ai/v1`                           | `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`, `muse-wonder-1.0`                                                     |
+| OpenCode Go                        | `openai`    | `https://api.opencode.go/v1`                       | Muse (`muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-wonder-1.0`), `deepseek-v4.1-flash`, `deepseek-v4.1`, `gpt-5-mini`      |
+| OpenAI                             | `openai`    | `https://api.openai.com/v1`                        | `gpt-4o-mini`, `gpt-4o`                                                                                                                                         |
+| Anthropic                          | `anthropic` | `https://api.anthropic.com/v1`                     | Muse (`muse-wonder-1.0`, `muse-spark-1.3`, `muse-spark-1.3-contributor`, `muse-spark-1.2`, `muse-spark-1.1`), `claude-3.5-sonnet`, `claude-3.5-haiku` |
+| Google Gemini                      | `gemini`    | `https://generativelanguage.googleapis.com/v1beta` | `gemini-1.5-flash`, `gemini-1.5-pro`                                                                                                                            |
+| Kustom                             | `openai`    | _(isi sendiri)_                                    | _(isi sendiri)_                                                                                                                                                   |
 
 Catatan:
 
 - **Meta Model API** kompatibel dengan OpenAI (Chat Completions) dan Anthropic (Messages). Untuk memakai model Muse lewat preset **Anthropic**, ubah Base URL ke `https://api.meta.ai/v1`.
-- API key Meta dibuat di dashboard Model API (`MODEL_API_KEY`) dan ditempel di kolom **Kunci API** halaman Koneksi AI — tidak perlu env server.
-- Referensi: <https://dev.meta.ai/docs/api-reference>.
+- API key Meta dibuat di dashboard Model API (`MODEL_API_KEY`) dan ditempel di kolom **Kunci API** halaman Koneksi AI. Untuk fallback server-side, isi juga `MODEL_API_KEY` di `server/.env`.
+- Referensi: [https://dev.meta.ai/docs/api-reference](https://dev.meta.ai/docs/api-reference).
 
 ---
 
@@ -106,12 +108,12 @@ server/src/              (backend)
 
 ## Tech Stack
 
-| Layer | Teknologi |
-|---|---|
-| Frontend | React 18, TypeScript, Vite 6, Tailwind CSS v4, lucide-react |
-| Backend | Node.js, TypeScript, Fastify 4, Zod, BullMQ, ioredis |
-| Infrastruktur | Redis 7, Docker Compose (Redis) |
-| Test | `node:test` (via `tsx`) |
+| Layer         | Teknologi                                                   |
+| ------------- | ----------------------------------------------------------- |
+| Frontend      | React 18, TypeScript, Vite 6, Tailwind CSS v4, lucide-react |
+| Backend       | Node.js, TypeScript, Fastify 4, Zod, BullMQ, ioredis        |
+| Infrastruktur | Redis 7, Docker Compose (Redis)                             |
+| Test          | `node:test` (via `tsx`)                                 |
 
 ---
 
@@ -144,28 +146,28 @@ cp server/.env.example server/.env   # lalu sesuaikan isinya
 
 ### Server (`server/.env`)
 
-| Variabel | Default | Keterangan |
-|---|---|---|
-| `PORT` | `8080` | Port HTTP server |
-| `REDIS_URL` | `redis://127.0.0.1:6379` | Koneksi Redis |
-| `FLOW_API_KEY` | `change-me-please` | Kunci untuk endpoint admin (`x-api-key`) |
-| `WEBHOOK_APP_SECRET` | _(kosong)_ | Bila diisi, webhook wajib signature `X-Hub-Signature-256` |
-| `WHATSAPP_TOKEN` | _(kosong)_ | Token Cloud API; kosong → mode mock |
-| `WHATSAPP_PHONE_NUMBER_ID` | _(kosong)_ | Phone number ID WhatsApp |
-| `GEMINI_API_KEY` | _(kosong)_ | Fallback AI bila Koneksi AI belum diisi |
-| `GEMINI_MODEL` | `gemini-1.5-flash` | Model fallback |
-| `AI_CONFIG_SECRET` | `dev-ai-config-secret-key-32bytes` | Kunci enkripsi API key (≥16 karakter, **wajib diganti di produksi**) |
-| `DEFAULT_FLOW_ID` | _(kosong)_ | Flow default saat tidak ada `flowId` di query webhook |
-| `CONVERSATION_TTL_SECONDS` | `86400` | TTL state percakapan |
-| `MAX_STEPS` | `40` | Batas langkah per turn |
-| `MAX_NODE_VISITS` | `12` | Batas kunjungan node (anti-loop) |
+| Variabel                     | Default                              | Keterangan                                                                  |
+| ---------------------------- | ------------------------------------ | --------------------------------------------------------------------------- |
+| `PORT`                     | `8080`                             | Port HTTP server                                                            |
+| `REDIS_URL`                | `redis://127.0.0.1:6379`           | Koneksi Redis                                                               |
+| `FLOW_API_KEY`             | `change-me-please`                 | Kunci untuk endpoint admin (`x-api-key`)                                  |
+| `WEBHOOK_APP_SECRET`       | _(kosong)_                         | Bila diisi, webhook wajib signature `X-Hub-Signature-256`                 |
+| `WHATSAPP_TOKEN`           | _(kosong)_                         | Token Cloud API; kosong → mode mock                                        |
+| `WHATSAPP_PHONE_NUMBER_ID` | _(kosong)_                         | Phone number ID WhatsApp                                                    |
+| `MODEL_API_KEY`            | _(kosong)_                         | Fallback AI Meta Model API bila Koneksi AI belum diisi                      |
+| `META_MODEL`               | `muse-spark-1.3`                   | Model fallback Meta (mis. `muse-wonder-1.0`)                                |
+| `AI_CONFIG_SECRET`         | `dev-ai-config-secret-key-32bytes` | Kunci enkripsi API key (≥16 karakter, **wajib diganti di produksi**) |
+| `DEFAULT_FLOW_ID`          | _(kosong)_                         | Flow default saat tidak ada `flowId` di query webhook                     |
+| `CONVERSATION_TTL_SECONDS` | `86400`                            | TTL state percakapan                                                        |
+| `MAX_STEPS`                | `40`                               | Batas langkah per turn                                                      |
+| `MAX_NODE_VISITS`          | `12`                               | Batas kunjungan node (anti-loop)                                            |
 
 ### Frontend (opsional, saat build)
 
-| Variabel | Default | Keterangan |
-|---|---|---|
-| `VITE_API_BASE` | `http://127.0.0.1:8080` | Base URL backend |
-| `VITE_FLOW_API_KEY` | `change-me-please` | Harus sama dengan `FLOW_API_KEY` |
+| Variabel              | Default                   | Keterangan                         |
+| --------------------- | ------------------------- | ---------------------------------- |
+| `VITE_API_BASE`     | `http://127.0.0.1:8080` | Base URL backend                   |
+| `VITE_FLOW_API_KEY` | `change-me-please`      | Harus sama dengan `FLOW_API_KEY` |
 
 ---
 
@@ -181,14 +183,14 @@ npm --prefix server run dev # http://127.0.0.1:8080
 
 Perintah lain:
 
-| Perintah | Fungsi |
-|---|---|
-| `npm run build` | Build frontend produksi |
-| `npm run lint` | ESLint (frontend + server) |
-| `npm test` | Jalankan test server |
-| `npm run verify` | lint + test + build frontend + build server |
-| `npm --prefix server run typecheck` | `tsc --noEmit` |
-| `npm --prefix server run build` | Compile server ke `server/dist` |
+| Perintah                              | Fungsi                                      |
+| ------------------------------------- | ------------------------------------------- |
+| `npm run build`                     | Build frontend produksi                     |
+| `npm run lint`                      | ESLint (frontend + server)                  |
+| `npm test`                          | Jalankan test server                        |
+| `npm run verify`                    | lint + test + build frontend + build server |
+| `npm --prefix server run typecheck` | `tsc --noEmit`                            |
+| `npm --prefix server run build`     | Compile server ke `server/dist`           |
 
 ---
 
@@ -196,19 +198,19 @@ Perintah lain:
 
 Semua endpoint admin butuh header `x-api-key: <FLOW_API_KEY>`.
 
-| Method | Path | Fungsi |
-|---|---|---|
-| `GET` | `/health` | Health check |
-| `PUT` | `/flows/:id` | Simpan graf flow |
-| `GET` | `/flows/:id` | Ambil graf flow |
-| `GET` | `/ai/config` | Ambil config AI (tanpa kunci) |
-| `PUT` | `/ai/config` | Simpan config AI (kunci dienkripsi) |
-| `POST` | `/ai/test` | Uji koneksi AI |
-| `GET` | `/settings/office-hours` | Ambil jam operasional |
-| `PUT` | `/settings/office-hours` | Simpan jam operasional |
-| `GET` | `/persona/config` | Ambil config persona |
-| `PUT` | `/persona/config` | Simpan config persona |
-| `POST` | `/webhook/whatsapp` | Webhook pesan masuk (signature) |
+| Method   | Path                       | Fungsi                              |
+| -------- | -------------------------- | ----------------------------------- |
+| `GET`  | `/health`                | Health check                        |
+| `PUT`  | `/flows/:id`             | Simpan graf flow                    |
+| `GET`  | `/flows/:id`             | Ambil graf flow                     |
+| `GET`  | `/ai/config`             | Ambil config AI (tanpa kunci)       |
+| `PUT`  | `/ai/config`             | Simpan config AI (kunci dienkripsi) |
+| `POST` | `/ai/test`               | Uji koneksi AI                      |
+| `GET`  | `/settings/office-hours` | Ambil jam operasional               |
+| `PUT`  | `/settings/office-hours` | Simpan jam operasional              |
+| `GET`  | `/persona/config`        | Ambil config persona                |
+| `PUT`  | `/persona/config`        | Simpan config persona               |
+| `POST` | `/webhook/whatsapp`      | Webhook pesan masuk (signature)     |
 
 Contoh:
 

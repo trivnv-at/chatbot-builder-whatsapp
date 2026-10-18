@@ -3,6 +3,7 @@ import type { AiConfigInput } from './ai-config.js';
 import { resolveAiCredentials } from './ai-config.js';
 import { callChatModel } from './ai-providers.js';
 
+const META_BASE_URL = 'https://api.meta.ai/v1';
 const BUSY_REPLY = 'Maaf, layanan AI sedang sibuk. Tim kami akan segera membantu.';
 const EMPTY_REPLY = 'Baik, boleh dijelaskan lebih detail?';
 const NO_KEY_REPLY = 'Terima kasih atas pesannya. Tim kami akan segera membantu.';
@@ -30,13 +31,13 @@ export async function askAi(input: {
     }
   }
 
-  if (config.GEMINI_API_KEY) {
+  if (config.MODEL_API_KEY) {
     try {
       const text = await callChatModel({
-        protocol: 'gemini',
-        baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
-        model: config.GEMINI_MODEL,
-        apiKey: config.GEMINI_API_KEY,
+        protocol: 'openai',
+        baseUrl: META_BASE_URL,
+        model: config.META_MODEL,
+        apiKey: config.MODEL_API_KEY,
         system: input.prompt,
         user: input.user
       });
