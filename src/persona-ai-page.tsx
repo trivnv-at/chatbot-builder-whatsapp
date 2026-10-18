@@ -9,7 +9,6 @@ import {
   Settings,
   Clock,
   Info,
-  ChevronRight,
   Brain,
   BookOpen,
   ListChecks,
@@ -40,20 +39,10 @@ const MODELS = [
   { id: 'gemini', model: 'gemini-1.5-flash', label: 'Google · gemini-1.5-flash' }
 ];
 
-const STAGES = [
-  { id: 'New', label: '1. New' },
-  { id: 'Contacted', label: '2. Contacted' },
-  { id: 'Warm', label: '3. Warm' },
-  { id: 'Negotiation', label: '4. Negotiation' },
-  { id: 'Won', label: '5. Won' },
-  { id: 'After sale', label: '6. After sale' },
-  { id: 'Lost', label: '7. Lost' }
-];
-
 const SUB_TABS = [
-  { id: 'peran', label: 'Peran & Gaya Bahasa', icon: Brain },
-  { id: 'pengetahuan', label: 'Pengetahuan Bot', icon: BookOpen, badge: '0 Dok' },
-  { id: 'datawajib', label: 'Data Wajib', icon: ListChecks, badge: '3 Field' }
+  { id: 'peran', label: 'Gaya Bicara', icon: Brain },
+  { id: 'pengetahuan', label: 'Sumber Info', icon: BookOpen, badge: '0' },
+  { id: 'datawajib', label: 'Data Pelanggan', icon: ListChecks, badge: '3' }
 ];
 
 const DEFAULT_PERSONA = {
@@ -133,11 +122,11 @@ function PersonaTab({ value, onChange }) {
     <div className="flex flex-col gap-5">
       <TabHeader
         icon={Brain}
-        title="Peran & Gaya Bahasa"
+        title="Gaya Bicara Bot"
         description="Tentukan kepribadian dan cara bicara chatbot. Semua balasan bot akan mengikuti gaya ini."
       />
 
-      <FormField label="Peran / Kepribadian Bot">
+      <FormField label="Peran Bot" hint="Contoh: sales yang ramah dan membantu.">
         <input
           value={value.persona}
           onChange={(e) => set('persona', e.target.value)}
@@ -145,7 +134,7 @@ function PersonaTab({ value, onChange }) {
         />
       </FormField>
 
-      <FormField label="Sapaan Pembuka" hint="Pesan pertama yang dikirim bot ke pelanggan baru.">
+      <FormField label="Pesan Pembuka" hint="Pesan pertama yang dikirim ke pelanggan baru.">
         <textarea
           rows={2}
           value={value.greeting}
@@ -155,7 +144,7 @@ function PersonaTab({ value, onChange }) {
       </FormField>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FormField label="Gaya Bahasa">
+        <FormField label="Gaya Bicara">
           <select
             value={value.tone}
             onChange={(e) => set('tone', e.target.value)}
@@ -166,7 +155,7 @@ function PersonaTab({ value, onChange }) {
             <option>Formal</option>
           </select>
         </FormField>
-        <FormField label="Panjang Balasan">
+        <FormField label="Panjang Pesan">
           <select
             value={value.length}
             onChange={(e) => set('length', e.target.value)}
@@ -189,14 +178,14 @@ function PersonaTab({ value, onChange }) {
           </select>
         </FormField>
         <div className="flex items-center justify-between gap-2 self-end rounded-lg border border-[#E2E8F0] bg-white px-3 py-2">
-          <span className="text-xs font-semibold text-[#3E4947]">Gunakan Emoji</span>
+          <span className="text-xs font-semibold text-[#3E4947]">Pakai Emoji</span>
           <Toggle checked={value.useEmoji} onChange={(v) => set('useEmoji', v)} />
         </div>
       </div>
 
       <FormField
-        label="Instruksi Sistem (System Prompt)"
-        hint="Aturan utama yang harus selalu dipatuhi bot."
+        label="Aturan Khusus Bot"
+        hint="Aturan yang harus selalu dipatuhi bot."
       >
         <textarea
           rows={4}
@@ -246,8 +235,8 @@ function KnowledgeTab({ value, onChange }) {
     <div className="flex flex-col gap-5">
       <TabHeader
         icon={BookOpen}
-        title="Pengetahuan Bot"
-        description="Unggah dokumen atau tautkan website agar bot bisa menjawab dari informasi Anda."
+        title="Sumber Pengetahuan Bot"
+        description="Unggah dokumen atau tempel link website supaya bot bisa menjawab dari informasi milikmu."
         badge={
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F8EE] px-2.5 py-1 text-[10px] font-semibold text-[#16A34A]">
             {docs.length} Sumber
@@ -389,11 +378,11 @@ function RequiredFieldsTab({ value, onChange }) {
     <div className="flex flex-col gap-5">
       <TabHeader
         icon={ListChecks}
-        title="Data Wajib"
-        description="Tentukan data pelanggan yang harus dikumpulkan bot sebelum prospek naik ke tahap berikutnya."
+        title="Data yang Harus Ditanya"
+        description="Tentukan data pelanggan yang harus dikumpulkan bot sebelum lanjut ke tahap berikutnya."
         badge={
           <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F8EE] px-2.5 py-1 text-[10px] font-semibold text-[#16A34A]">
-            {requiredCount} Field Wajib
+            {requiredCount} Wajib
           </span>
         }
       />
@@ -401,8 +390,8 @@ function RequiredFieldsTab({ value, onChange }) {
       <div className="flex items-start gap-2 rounded-lg bg-[#E8F1FD] p-3">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#1D4ED8]" />
         <p className="text-[11px] leading-relaxed text-[#191C1E]">
-          Bot akan berusaha menanyakan field di bawah lewat percakapan. Bila semua field wajib
-          sudah terisi, prospek otomatis dipindah ke tahap berikutnya.
+          Bot akan menanyakan data di bawah lewat percakapan. Kalau semua sudah terisi, pelanggan
+          otomatis naik ke tahap berikutnya.
         </p>
       </div>
 
@@ -449,7 +438,6 @@ function RequiredFieldsTab({ value, onChange }) {
 
 export default function PersonaAiPage({ onBack, onManageAi }) {
   const [subTab, setSubTab] = useState('peran');
-  const [activeStage, setActiveStage] = useState('New');
   const [modelOpen, setModelOpen] = useState(false);
   const [modelId, setModelId] = useState('deepseek');
 
@@ -472,7 +460,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
           if (cfg.persona) setPersona({ ...DEFAULT_PERSONA, ...cfg.persona });
           if (cfg.knowledge) setKnowledge({ ...DEFAULT_KNOWLEDGE, ...cfg.knowledge });
           if (Array.isArray(cfg.fields)) setFields(cfg.fields);
-          if (typeof cfg.activeStage === 'string') setActiveStage(cfg.activeStage);
           if (typeof cfg.modelId === 'string') setModelId(cfg.modelId);
           if (typeof cfg.botSystemOn === 'boolean') setBotSystemOn(cfg.botSystemOn);
         }
@@ -491,7 +478,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
     try {
       await Promise.all([
         savePersonaConfig({
-          activeStage,
           modelId,
           model: activeModel.model,
           botSystemOn,
@@ -559,7 +545,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
           <p className="text-[11px] font-semibold text-[#00695F]">Otomasi · Chatbot</p>
           <h1 className="text-lg font-semibold tracking-tight text-[#191C1E]">Chatbot Builder</h1>
           <p className="text-xs text-[#6F7977]">
-            Workflow event-based (gabungan Otomasi Pipeline) + Persona AI per stage.
+            Atur alur percakapan dan gaya balasan chatbot kamu di sini.
           </p>
         </div>
         <div className="flex gap-1 border-b border-[#E2E8F0]">
@@ -593,15 +579,15 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                     <Bot className="h-[18px] w-[18px]" />
                   </span>
                   <h1 className="text-lg font-semibold tracking-tight text-[#191C1E]">
-                    Atur Chatbot AI untuk Tiap Tahap Prospek
+                    Atur Gaya Balasan Chatbot
                   </h1>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E4E9EB] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-[#3E4947]">
                     Pelacakan Iklan Otomatis
                   </span>
                 </div>
                 <p className="text-xs text-[#6F7977]">
-                  Atur balasan otomatis chatbot untuk setiap tahap calon pembeli dari iklan Meta Ads
-                  &amp; WhatsApp. Pilih model AI yang ingin dipakai.
+                  Tentukan cara chatbot membalas pelanggan yang datang dari iklan Meta Ads &amp;
+                  WhatsApp.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -630,13 +616,11 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
               </div>
             </div>
 
-            {/* Kartu Model AI */}
-            <div className="relative rounded-xl bg-white p-4 shadow-sm">
-              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                <div className="flex flex-wrap items-center gap-4">
-                  <span className="text-xs font-semibold text-[#3E4947]">
-                    Model AI (dari Koneksi AI):
-                  </span>
+            {/* Kartu pengaturan dasar */}
+            <div className="rounded-xl bg-white shadow-sm">
+              <div className="flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-semibold text-[#3E4947]">Model AI yang dipakai:</span>
                   <div className="relative">
                     <button
                       type="button"
@@ -670,35 +654,26 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                   </div>
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E8F8EE] px-2.5 py-1 text-[10px] font-semibold text-[#16A34A]">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-[#16A34A]" />
-                    Terhubung
+                    Tersambung
                   </span>
-                  <span className="font-mono text-[11px] text-[#6F7977]">
-                    API key hash:{' '}
-                    <span className="rounded bg-[#E4E9EB] px-1 py-0.5">sha256:a1b2c3d4…c5d6</span> ·
-                    tersimpan sebagai hash
-                  </span>
+                  <span className="text-[11px] text-[#8A9492]">Kunci API tersimpan aman</span>
                 </div>
                 <button
                   type="button"
                   onClick={onManageAi}
-                  className="inline-flex items-center gap-2 rounded-lg bg-[#F2F4F6] px-4 py-1.5 text-xs font-semibold text-[#00695F] transition hover:bg-[#E4E9EB]"
+                  className="inline-flex w-fit items-center gap-2 rounded-lg bg-[#F2F4F6] px-4 py-1.5 text-xs font-semibold text-[#00695F] transition hover:bg-[#E4E9EB]"
                 >
                   <Settings className="h-[18px] w-[18px]" />
-                  Kelola Koneksi AI
+                  Atur Koneksi AI
                 </button>
               </div>
-            </div>
 
-            {/* Kartu Jam Operasional */}
-            <div className="rounded-xl bg-white p-4 shadow-sm">
-              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+              <div className="flex flex-col justify-between gap-2 border-t border-[#E2E8F0] p-4 sm:flex-row sm:items-center">
                 <div className="flex flex-wrap items-center gap-2">
                   <Clock className="h-[18px] w-[18px] text-[#00695F]" />
-                  <span className="text-xs font-semibold text-[#3E4947]">
-                    Batasi ke Jam Operasional
-                  </span>
+                  <span className="text-xs font-semibold text-[#3E4947]">Batasi Jam Kerja Bot</span>
                   <span className="text-[11px] text-[#8A9492]">
-                    {officeHoursOn ? 'Bot aktif sesuai jam kerja' : 'Bot aktif 24/7'}
+                    {officeHoursOn ? 'Bot hanya membalas pada jam kerja' : 'Bot membalas 24 jam'}
                   </span>
                 </div>
                 <Toggle checked={officeHoursOn} onChange={setOfficeHoursOn} />
@@ -710,49 +685,6 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
           </header>
 
           {/* Pilih stage CRM */}
-          <section className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {STAGES.map((stage) => {
-                const isActive = stage.id === activeStage;
-                return (
-                  <button
-                    key={stage.id}
-                    type="button"
-                    onClick={() => setActiveStage(stage.id)}
-                    className={`flex flex-shrink-0 items-center gap-2 rounded-full px-4 py-2.5 text-xs shadow-sm transition ${
-                      isActive
-                        ? 'bg-[#CCE8E2] font-bold text-[#004F47] ring-2 ring-[#00695F]'
-                        : 'bg-[#E4E9EB] font-semibold text-[#3E4947] hover:bg-[#D5DDDC]'
-                    }`}
-                  >
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        isActive ? 'animate-ping bg-[#16A34A]' : 'bg-[#3B82F6]'
-                      }`}
-                    />
-                    <span>{stage.label}</span>
-                    <span className="rounded-full bg-white px-1.5 py-0.5 font-mono text-[10px] text-[#6F7977]">
-                      Default
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex items-center justify-between gap-4 rounded-lg bg-[#E8F1FD] p-4">
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-[#1D4ED8]" />
-                <p className="text-xs text-[#191C1E]">
-                  <span className="font-semibold">Tahap Aktif: {activeStage}</span> — Memakai model
-                  global default.
-                </p>
-              </div>
-              <span className="hidden items-center gap-1 text-[10px] font-semibold text-[#1D4ED8] sm:flex">
-                Prisma State Machine
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            </div>
-          </section>
-
           {/* Grid konfigurasi + testing */}
           <div className="grid grid-cols-1 items-start gap-5 pb-8 lg:grid-cols-12">
             {/* Kolom kiri */}
@@ -827,7 +759,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                   <div className="flex items-center gap-1.5">
                     <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#16A34A]" />
                     <span className="text-sm font-semibold text-[#191C1E]">
-                      Testing Mode — {activeStage}
+                      Coba Bot
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
@@ -854,7 +786,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                       <div>
                         <div className="text-xs font-semibold leading-none">Budi Utomo</div>
                         <span className="text-[10px] text-[#CCE8E2] opacity-90">
-                          WA Cloud API · Active 24h window
+                          WhatsApp
                         </span>
                       </div>
                     </div>
@@ -879,8 +811,8 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                           className="max-w-[88%] self-end rounded-2xl rounded-tr-sm bg-[#CCE8E2] p-3 text-[11px] text-[#004F47] shadow-sm"
                         >
                           <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-[#5E8A80]">
-                            <span>SYSTEM_BOT ({activeModel.label})</span>
-                            <span>temp: 0.3</span>
+                            <span>Bot</span>
+                            <span>{activeModel.label}</span>
                           </div>
                           <p>{message.text}</p>
                           <div className="mt-1 flex items-center justify-end gap-1 text-[10px] text-[#5E8A80]">
@@ -892,12 +824,12 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                     )}
                     <div className="self-center rounded-full bg-[#E8F1FD] px-3 py-1 text-[10px] font-semibold text-[#1D4ED8] shadow-sm">
                       <Timer className="mr-1 inline h-3.5 w-3.5 align-middle" />
-                      Sesi 24 jam aktif — Percakapan bebas dua arah didukung
+                      Pelanggan bisa membalas bebas selama 24 jam
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto bg-white/80 px-4 py-1.5">
-                    {['Tanya Integrasi CAPI', 'Sebut Budget 25jt', 'Minta Sales Manusia'].map(
+                    {['Tanya soal iklan', 'Sebut budget 25 juta', 'Minta bantuan orang'].map(
                       (chip) => (
                         <button
                           key={chip}
@@ -934,11 +866,11 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                     <div className="flex items-center gap-1.5">
                       <BrainCircuit className="h-[18px] w-[18px] text-[#00695F]" />
                       <span className="text-sm font-semibold text-[#191C1E]">
-                        Ekstraksi Kontak Real-Time
+                        Data yang Terkumpul
                       </span>
                     </div>
                     <span className="rounded-full bg-[#E8F8EE] px-2 py-0.5 text-[10px] font-bold text-[#16A34A]">
-                      0 dari 3 Terdeteksi
+                      0 dari 3 terkumpul
                     </span>
                   </div>
                   <div className="flex flex-col gap-1.5">
@@ -952,7 +884,7 @@ export default function PersonaAiPage({ onBack, onManageAi }) {
                         </span>
                         <span className="flex items-center gap-1 rounded bg-[#E4E9EB] px-2 py-0.5 text-[10px] font-semibold text-[#3E4947]">
                           <MoreHorizontal className="h-3 w-3" />
-                          Menunggu
+                          Belum ada
                         </span>
                       </div>
                     ))}
