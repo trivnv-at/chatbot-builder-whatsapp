@@ -687,7 +687,7 @@ const ALL_CHANNELS = ['wa', 'telegram', 'instagram', 'tiktok', 'fb_messenger', '
 const BOT_TEMPLATES = [
   {
     id: 'welcome_bot',
-    title: 'Bot sambutan',
+    title: 'Sapa Pelanggan Baru',
     category: 'business_info',
     channelIds: ALL_CHANNELS,
     icon: MessageSquare,
@@ -701,7 +701,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'receive_booking',
-    title: 'Terima pemesanan janji temu',
+    title: 'Catat Jadwal Janji Temu',
     category: 'automate_booking',
     channelIds: ['wa', 'instagram', 'fb_messenger'],
     icon: CalendarClock,
@@ -715,7 +715,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'capture_callback',
-    title: 'Tangkap lead yang menginginkan panggilan',
+    title: 'Kumpulkan Nomor untuk Ditelepon',
     category: 'generate_leads',
     channelIds: ['wa', 'tiktok', 'instagram'],
     icon: UserPlus,
@@ -729,7 +729,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'qualify_budget',
-    title: 'Kualifikasi budget lead',
+    title: 'Saring Pelanggan Siap Beli',
     category: 'generate_leads',
     channelIds: ['wa', 'fb_messenger'],
     icon: Gauge,
@@ -743,7 +743,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'business_faq',
-    title: 'Info bisnis & FAQ',
+    title: 'Jawab Pertanyaan Umum',
     category: 'business_info',
     channelIds: ALL_CHANNELS,
     icon: Bot,
@@ -757,7 +757,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'keyword_reply',
-    title: 'Membalas kata kunci',
+    title: 'Balas Otomatis per Kata Kunci',
     category: 'reduce_busywork',
     channelIds: ['wa', 'telegram', 'instagram', 'tiktok'],
     icon: Zap,
@@ -769,7 +769,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'offline_message',
-    title: 'Terima pesan saat kamu offline',
+    title: 'Balas Saat Anda Tidak Online',
     category: 'reduce_busywork',
     channelIds: ALL_CHANNELS,
     icon: Clock,
@@ -782,7 +782,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'collect_feedback',
-    title: 'Kumpulkan masukan dengan emoji',
+    title: 'Minta Penilaian Pelanggan',
     category: 'nurture_leads',
     channelIds: ['wa', 'fb_messenger', 'instagram'],
     icon: Smile,
@@ -795,7 +795,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'schedule_promo',
-    title: 'Jadwalkan pesan promo',
+    title: 'Kirim Promo Terjadwal',
     category: 'nurture_leads',
     channelIds: ['wa', 'mail', 'telegram'],
     icon: Timer,
@@ -808,7 +808,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'route_requests',
-    title: 'Arahkan permintaan ke orang yang tepat',
+    title: 'Teruskan ke Bagian yang Tepat',
     category: 'reduce_busywork',
     channelIds: ALL_CHANNELS,
     icon: Split,
@@ -821,7 +821,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'send_promo_code',
-    title: 'Kirim kode promo berdasarkan kata kunci',
+    title: 'Bagikan Kode Diskon',
     category: 'nurture_leads',
     channelIds: ['wa', 'instagram', 'tiktok'],
     icon: Tag,
@@ -833,7 +833,7 @@ const BOT_TEMPLATES = [
   },
   {
     id: 'follow_up_booking',
-    title: 'Follow up konfirmasi perjanjian',
+    title: 'Ingatkan Jadwal Janji',
     category: 'automate_booking',
     channelIds: ['wa', 'mail'],
     icon: CalendarClock,
@@ -845,6 +845,15 @@ const BOT_TEMPLATES = [
     ]
   }
 ];
+
+function shuffleArray(list) {
+  const items = [...list];
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
 
 const BOTS = [
   {
@@ -1229,7 +1238,8 @@ function BotTemplatesLibrary({ onClose, onPick, onBlank }) {
   }, []);
 
   const query = search.trim().toLowerCase();
-  const templates = BOT_TEMPLATES.filter((t) => {
+  const baseTemplates = useMemo(() => shuffleArray(BOT_TEMPLATES), []);
+  const templates = baseTemplates.filter((t) => {
     const inCategory = category === 'all' || t.category === category;
     const inChannel = channels.length === 0 || t.channelIds.some((c) => channels.includes(c));
     const inSearch = !query || t.title.toLowerCase().includes(query);
