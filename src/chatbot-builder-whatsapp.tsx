@@ -16,7 +16,6 @@ import {
   Copy,
   Search,
   Check,
-  ShieldCheck,
   MousePointer,
   PanelRight,
   RotateCcw,
@@ -45,7 +44,7 @@ import {
 import PersonaAiPage from './persona-ai-page';
 import AiConnectionPage from './ai-connection-page';
 
-// ===== Tipe data socket (mengacu Node Editor Blender) =====
+// ===== Tipe data socket (gaya node editor) =====
 const SOCKET_TYPES = {
   flow: { label: 'Alur', color: '#FFFFFF', border: '#4A635F' },
   string: { label: 'String', color: '#EEEE22', border: '#8A8A17' },
@@ -2536,9 +2535,6 @@ export default function App() {
                 <h1 className="truncate text-sm font-semibold tracking-tight text-[#191C1E]">
                   {view === 'builder' && activeBot ? activeBot.name : 'Chatbot Builder WhatsApp'}
                 </h1>
-                <span className="hidden shrink-0 items-center gap-1 rounded-full border border-[#86EFAC] bg-[#E8F8EE] px-2 py-0.5 text-[10px] font-semibold text-[#16A34A] lg:inline-flex">
-                  <ShieldCheck className="h-3 w-3" /> CAPI Aktif
-                </span>
                 {view === 'builder' && activeBot && <StatusPill status={activeBot.status} />}
               </div>
               <p className="hidden truncate text-[11px] text-[#6F7977] sm:block">
@@ -3449,7 +3445,7 @@ export default function App() {
           )}
         </div>
         <div className="hidden shrink-0 font-mono text-[10px] text-[#6F7977] md:block">
-          Chatbot Flow Engine v3.3 &middot; Socket Spec Blender
+          Chatbot Flow Engine v3.3
         </div>
       </footer>
 
